@@ -1,9 +1,8 @@
 const userdb = require('../db_connection');
 
-userdb.con
 const createUser =(name, username, password, email, age, contact_number, gender)=>{ 
 qr = `insert into customer(name, username, password, email, age, contact_number, gender) values(?, ?, ?, ?, ?, ?, ?)`;
-userdb.con.query(qr,[name, username, password, email, age, contact_number, gender],(err,result)=>{
+userdb.con.query(qr,[name, username, password, email, age, contact_number, gender],(err)=>{
     if(err){
         res.send({error:"error occured"})
     }
@@ -13,9 +12,20 @@ userdb.con.query(qr,[name, username, password, email, age, contact_number, gende
    })
 }
 
+const login = (username,password, callback)=>{
+    loginQr = `select username, password from customer where username=? and password=?`;
+    userdb.con.query(loginQr,[username, password],(err)=>{
+        if(err){
+            callback({error:"error"})
+        }
+        else{
+            callback({success:"success"});
+        }
+       })
+}
 
 module.exports = {
-    createUser
+    createUser,login
 }
 
 
