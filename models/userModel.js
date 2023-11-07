@@ -14,15 +14,16 @@ userdb.con.query(qr,[name, username, password, email, age, contact_number, gende
 
 const login = (username,password, callback)=>{
     loginQr = `select username, password from customer where username=? and password=?`;
-    userdb.con.query(loginQr,[username, password],(err)=>{
+    userdb.con.query(loginQr,[username, password],(err, result)=>{
         if(err){
-            callback({error:"error"})
+            callback({error:"error"}, null)
         }
         else{
-            callback({success:"success"});
+            callback(null, result);
         }
        })
-}
+}        
+
 
 module.exports = {
     createUser,login
