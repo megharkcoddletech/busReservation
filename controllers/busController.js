@@ -2,15 +2,16 @@ const busModel = require('../models/busModels');
 
 
 const getBusController = (req, res) => {
-    busModel.viewBus((err,result)=>{ 
+    const {starting_point, destination} =req.body;
+    busModel.viewBus(starting_point, destination, (err,result)=>{ 
             if(err){
-                res.status(500).json({success: "false"})
+                res.status(500).json({success: "false", message: "internal server error"});
             }
             else if (result.length > 0){
-                res.status(200).json({success: "true",result})
+                res.status(200).json({success: "true",result});
             }
             else{
-                res.status(400).json({success: "false"})
+                res.status(400).json({success: "false"});
             }
         }
     );
