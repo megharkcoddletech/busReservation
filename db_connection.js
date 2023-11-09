@@ -1,6 +1,6 @@
-const { JsonWebTokenError } = require("jsonwebtoken");
-var mysql = require("mysql2");
-var con = mysql.createConnection({
+const mysql = require("mysql2");
+const promise = require("mysql-promise");
+const con = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "S006ya#1",
