@@ -17,6 +17,8 @@ const getBus = async(req, res) => {
   }
 
 };
+
+
 module.exports = {
     getBus
 }

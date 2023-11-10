@@ -23,10 +23,16 @@ const viewBus = async (starting_point, destination, boarding_time) => {
         else {
            allArray.push(allBus)
         }
-        console.log(allArray);
         return allArray;
 }
+ 
+const booking = async(customer_id, bus_id, date,no_of_seats, total_amount, status) =>{
+  const bookingQuery = `insert into booking (customer_id, bus_id, date,no_of_seats, total_amount, status) values (?, ?, ?, ?, ?, ?)`;
+  const addBooking = await busdb.con.promise().query(bookingQuery,[customer_id, bus_id, date,no_of_seats, total_amount, status]);
+  return addBooking;
+}
+
 module.exports = {
-    viewBus
+    viewBus, booking
 }
 

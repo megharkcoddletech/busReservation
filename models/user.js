@@ -1,32 +1,21 @@
 const userdb = require('../db_connection');
 
-const createUser =(name, username, password, email, age, contact_number, gender)=>{ 
-qr = `insert into customer(name, username, password, email, age, contact_number, gender) values(?, ?, ?, ?, ?, ?, ?)`;
-userdb.con.query(qr,[name, username, password, email, age, contact_number, gender],(err)=>{
-    if(err){
-        res.send({error:"error occured"})
-    }
-    else{
-        res.send({success:"success"})
-    }
-   })
+const createUser = async (name, username, password, email, age, contact_number, gender) => {
+    const qr = `insert into customer (name, username, password, email, age, contact_number, gender) values(?, ?, ?, ?, ?, ?, ?)`;
+    const addUser = await userdb.con.promise().query(qr, [name, username, password, email, age, contact_number, gender]);
+    return addUser;
 }
 
-const login = (username,password, callback)=>{
+
+const login = async (username, password) => {
     loginQr = `select username, password from customer where username=? and password=?`;
-    userdb.con.query(loginQr,[username, password],(err, result)=>{
-        if(err){
-            callback({error:"error"}, null)
-        }
-        else{
-            callback(null, result);
-        }
-       })
-}        
+    const userLogin = await userdb.con.promise().query(loginQr, [username, password]);
+    return userLogin;
+}
 
 
 module.exports = {
-    createUser,login
+    createUser, login
 }
 
 
