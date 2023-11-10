@@ -1,6 +1,7 @@
 const busdb = require('../db_connection');
+
 const viewBus = async (starting_point, destination, boarding_time) => {
-        let allArrry = [];
+        let allArray = [];
         const getAllBus = `select * from bus`;
         const getBusByRoute = `select bus.name, route.starting_point, route.destination, 
         route.boarding_time, route.deboarding_time FROM bus INNER JOIN route
@@ -14,16 +15,16 @@ const viewBus = async (starting_point, destination, boarding_time) => {
         const allROute = await busdb.con.promise().query(getBusByRoute, [starting_point, destination]);
         const allTime = await busdb.con.promise().query(getBusByTime, [starting_point, destination, boarding_time]);
         if(starting_point!= null && destination != null && boarding_time != null){ 
-            allArrry.push(allTime);
+            allArray.push(allTime);
         }
         else if(starting_point!= null && destination != null && boarding_time == null){
-          allArrry.push(allROute);
+          allArray.push(allROute);
         }
         else {
-           allArrry.push(allBus)
+           allArray.push(allBus)
         }
-
-        return allArrry;
+        console.log(allArray);
+        return allArray;
 }
 module.exports = {
     viewBus
