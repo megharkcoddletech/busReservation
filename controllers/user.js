@@ -1,34 +1,35 @@
-const userModel = require("../models/user")
+const userDb = require("../models/user")
 const jwt = require("jsonwebtoken")
 
-const registerUser = (req, res) =>{
-    const {name, username, password,email, age, contact_number,gender} = req.body;
-    if(!name || !password || !username || !email || !age || !contact_number || gender){
-        console.log("Fill the empty field");
-        res.status(400).json({ error: "Fill the empty fields" });  
+const registerUser = async (req, res) => {
+    const { name, username, password, email, age, contact_number, gender } = req.body;
+    const signUp = await userDb.createUser(name, username, password, email, age, contact_number, gender);
+    if (name == null || password == null || username == null || email == null || age == null || contact_number == null || gender == null) {
+        res.status(400).json({ success: "false", message: "Fill the empty fields" });
     }
-    else{
-        console.log(name);
+    else {
+        res.status(200).json({ success: "true", message: signUp[0] });
     }
-} 
+}
 
-const checkLogin = (req, res) =>{
-    const {username, password} = req.body;
-    userModel.login(username, password, (err, result) =>{
-        if (err){
-            res.status(500).json({success:false, error: "intenal server error" });
-        } else if(result.length === 1 && result[0].username === username && result[0].password === password) {
-            const id = result[0].id;
-            const token = jwt.sign({id}, "userkey",{expiresIn: 300});
-            res.status(200).json({success:true, token, message : "login succesfull"});
-            }
-        else{
-            res.status(400).json({success:false, message:"enter valid input and output"})
-            }
-        });
-
+const checkLogin = async (req, res) => {
+    const { username, password } = req.body;
+    const checkLoginQuery = await userDb.login(username, password);
+    const body = req.body;
+    if (checkLoginQuery.length > 0) {
+        if (checkLoginQuery[0][0].username == body.username && checkLoginQuery[0][0].password == body.password) {
+            const id = checkLoginQuery[0][0].id;
+            const token = jwt.sign({ id }, "userkey", { expiresIn: 300 });
+            res.status(200).json({ success: "true", token, message: "login successfull", })
+        }
+        else {
+            res.status(400).json({ success: false, message: "enter valid input and output" })
+        }
     }
-    
-module.exports={registerUser,checkLogin} 
+}
 
-   
+module.exports = {
+    registerUser,
+    checkLogin
+}
+
