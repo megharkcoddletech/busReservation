@@ -6,13 +6,11 @@ const createUser = async (name, username, password, email, age, contact_number, 
     return addUser;
 }
 
-
 const login = async (username, password) => {
     loginQr = `select username, password from customer where username=? and password=?`;
     const userLogin = await userdb.con.promise().query(loginQr, [username, password]);
     return userLogin;
 }
-
 
 module.exports = {
     createUser, login

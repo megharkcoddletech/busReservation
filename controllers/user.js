@@ -2,6 +2,7 @@ const userDb = require("../models/user")
 const jwt = require("jsonwebtoken")
 
 const registerUser = async (req, res) => {
+    console.log(res);
     const { name, username, password, email, age, contact_number, gender } = req.body;
     const signUp = await userDb.createUser(name, username, password, email, age, contact_number, gender);
     if (name == null || password == null || username == null || email == null || age == null || contact_number == null || gender == null) {
