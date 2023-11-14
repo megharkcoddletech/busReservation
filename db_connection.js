@@ -23,4 +23,3 @@ function makeDb(config) {
 }
 
 module.exports = { makeDb };
-
