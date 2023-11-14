@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const busController = require("../controllers/bus");
-router.get('/viewBuses', busController.getBus);
-router.post('/addBooking', busController.booking);
-router.get('/viewBooking', busController.viewBooking)
+const { verifyToken } = require("../middleware/middleWare");
+router.get('/viewBuses', verifyToken,busController.getBus);
+router.post('/addBooking', verifyToken,busController.booking);
+router.get('/viewBooking', verifyToken, busController.viewBooking);
+router.get('/viewOffers', verifyToken, busController.viewOffers);
+
 
 module.exports = router;
