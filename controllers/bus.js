@@ -2,9 +2,12 @@ const busDb = require('../models/bus');
 
 const addBus = async (req, res) => {
      try {
-          const { name, bus_number, type, fare_per_km, ratings, status } = req.body;
-          const addBusQuery = await busDb.addBus(name, bus_number, type, fare_per_km, ratings, status);
-          if (name == null || bus_number == null || type == null || fare_per_km == null || ratings == null || status == null) {
+          const { name, busNumber, type, farePerKm, ratings, status } = req.body;
+          const addBusQuery = await busDb.addBus(name, busNumber, type, farePerKm, ratings, status);
+          if(addBusQuery.length > 0){
+               res.status(200).json({success:"false", message : "bus already exists"})
+          }
+          if (name === undefined || busNumber === undefined || type === undefined || farePerKm === undefined || ratings === undefined || status === undefined) {
                res.status(400).json({ success: "false", message: "enter all values" });
           }
           else {
@@ -18,15 +21,19 @@ const addBus = async (req, res) => {
 
 const getBus = async (req, res) => {
      try {
-          const { starting_point, destination, boarding_time } = req.body;
+          const { startingPoint, destination, boardingTime } = req.body;
           const body = req.body;
-          const buses = await busDb.viewBus(starting_point, destination, boarding_time);
+          const buses = await busDb.viewBus(startingPoint, destination, boardingTime);
           if (buses.length > 0) {
-               if (body.starting_point != null && body.destination != null && body.boarding_time != null) {
+               if (body.startingPoint != null && body.destination != null && body.boardingTime != null) {
                     res.status(200).json({ success: "true", result: buses });
-               } else if (body.starting_point != null && body.destination != null && body.boarding_time === null) {
+               } else if (body.startingPoint != null && body.destination != null && body.boardingTime === undefined) {
                     res.status(200).json({ success: "true", result: buses });
-               } else {
+               }
+               else if(body.startingPoint != null && body.destination === undefined && body.boardingTime === undefined){
+                    res.status(200).json({success:"true", result : buses});
+               } 
+               else {
                     res.status(200).json({ success: "true", result: buses });
                }
           } else {
@@ -41,18 +48,27 @@ const getBus = async (req, res) => {
 
 const booking = async (req, res) => {
      try {
-          const { customer_id, bus_id, date, no_of_seats, total_amount, status } = req.body;
-          const addBooking = await busDb.booking(customer_id, bus_id, date, no_of_seats, total_amount, status);
-          if (customer_id == null || bus_id == null || date == null || no_of_seats == null || total_amount == null) {
+
+          const { customerId, busId, date, noOfSeats, totalAmount, status,seatsId } = req.body;
+          const addBooking = await busDb.booking(customerId, busId, date, noOfSeats, totalAmount, status,seatsId);
+          if(addBooking.length > 0 && addBooking.seatsId != null){
+               res.status(404).json({success: "false", message:"booking already exists"});
+          }
+          if (customerId === undefined || busId === undefined || date === undefined || noOfSeats === undefined || totalAmount === undefined) {
                res.status(400).json({ success: "false", message: "enter all values" });
+          }else if (addBooking.error_type == 1){
+               res.status(200).json
+               ({ success: "true", message: addBooking.message });
           }
           else {
                res.status(200).json({ success: "true", message: "booking succesfull" });
           }
      }
-     catch {
+     catch(err) {
           res.status(500).json({ success: "false", message: "internal server error" });
      }
+
+     
 }
 
 const viewBooking = async (req, res) => {
@@ -61,7 +77,7 @@ const viewBooking = async (req, res) => {
           const { date } = req.body;
           const viewBooking = await busDb.viewBooking(date);
           if (viewBooking.length > 0) {
-               if (date == null) {
+               if (date === undefined) {
                     res.status(200).json({ success: "true", result: viewBooking });
                }
                else if (date != null) {
@@ -76,14 +92,14 @@ const viewBooking = async (req, res) => {
           }
      }
      catch (err) {
-          res.status(500).json({ success: "true", message: "internal server error" });
+          res.status(500).json({ success: "false", message: "internal server error" });
      }
 }
 
 const viewOffers = async (req, res) => {
      try {
-          const current_Offers = await busDb.viewOffers();
-          res.status(200).json({ success: "true", message: current_Offers });
+          const currentOffers = await busDb.viewOffers();
+          res.status(200).json({ success: "true", message: currentOffers });
      }
      catch (err) {
           res.status(500).json({ success: "false", message: "internal server error" });
@@ -97,3 +113,6 @@ module.exports = {
      addBus,
      viewOffers
 }
+
+
+   

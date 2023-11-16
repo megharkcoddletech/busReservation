@@ -1,6 +1,6 @@
 const userdb = require('../db_connection');
 const db = userdb.makeDb(userdb);
-const createUser = async (name, username, password, email, age, contact_number, gender) => {
+const createUser = async (name, username, password, email, age, contactNumber, gender) => {
 
     try {
         const users = `select * from customer where email = ?`;
@@ -10,7 +10,7 @@ const createUser = async (name, username, password, email, age, contact_number, 
         }
         else {
             const qr = `insert into customer (name, username, password, email, age, contact_number, gender) values(?, ?, ?, ?, ?, ?, ?)`;
-            const addUser = await db.query(qr, [name, username, password, email, age, contact_number, gender]);
+            const addUser = await db.query(qr, [name, username, password, email, age, contactNumber, gender]);
             return addUser;
         }     
 
