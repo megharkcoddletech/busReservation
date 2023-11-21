@@ -1,15 +1,20 @@
-const bodyParser = require("body-parser");
-const express = require("express");
+const bodyParser = require('body-parser');
+
+const express = require('express');
+
 const app = express();
 
 app.use(express.json());
+const cors = require('cors');
+
 const userRoute = require('./routes/user');
-app.use('/user',userRoute);
+
+app.use('/user', userRoute);
 
 const busRoute = require('./routes/bus');
-app.use('/bus',busRoute);
 
-const cors = require("cors");
+app.use('/bus', busRoute);
+
 app.use(cors());
 
 app.use(bodyParser.json());
