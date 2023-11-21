@@ -1,30 +1,30 @@
 const busdb = require('../db_connection');
+
 const db = busdb.makeDb(busdb);
 
-const addBus = async (name, busNumber, type, farePerKm, ratings, status) => {
-
+async function addBus(name, busNumber, type, farePerKm, ratings, status) {
   try {
-    const bus = `select bus_number from bus where bus_number = ?`;
+    const bus = 'select bus_number from bus where bus_number = ?';
     const checkBus = await db.query(bus, [busNumber]);
+    let result;
     if (checkBus.length > 0) {
-      return checkBus;
+      result = checkBus;
+    } else {
+      const addBusQuery = 'insert into bus (name, bus_number, type, fare_per_km, ratings, status) values(?,?,?,?,?,?)';
+      const postBus = await db.query(
+        addBusQuery,
+        [name, busNumber, type, farePerKm, ratings, status],
+      );
+      result = postBus;
     }
-    else {
-      const addBusQuery = `insert into bus (name,bus_number, type, fare_per_km, ratings, status) values(?,?,?,?,?,?)`;
-      const postBus = await db.query(addBusQuery, [name, busNumber, type, farePerKm, ratings, status]);
-      return postBus;
-    }
-  }
-  catch (err) {
+    return result;
+  } finally {
     await db.close();
   }
 }
 
-
-const viewBus = async (startingPoint, destination, boardingTime) => {
-
+async function viewBus(startingPoint, destination, boardingTime) {
   try {
-
     const getAllBus = `select bus.id, bus.name, bus.bus_number, bus.type, bus.fare_per_km, bus.ratings,
           bus.status,route.starting_point, route.destination, route.boarding_time, route.deboarding_time
           from bus inner join route on bus.id = route.bus_id limit 10`;
@@ -40,81 +40,102 @@ const viewBus = async (startingPoint, destination, boardingTime) => {
           route.boarding_time, route.deboarding_time FROM bus INNER JOIN route
           ON bus.id = route.bus_id WHERE route.starting_point = ? limit 10`;
 
-
     const allBus = await db.query(getAllBus);
     const startPointBus = await db.query(startPointOnly, [startingPoint]);
     const allROute = await db.query(getBusByRoute, [startingPoint, destination]);
     const allTime = await db.query(getBusByTime, [startingPoint, destination, boardingTime]);
     if (startingPoint != null && destination != null && boardingTime != null) {
       return allTime;
-    }
-    else if (startingPoint != null && destination != null && boardingTime === undefined) {
-      return allROute
-    }
-    else if (startingPoint != null && destination === undefined && boardingTime === undefined) {
+    } if (startingPoint != null && destination != null && boardingTime === undefined) {
+      return allROute;
+    } if (startingPoint != null && destination === undefined && boardingTime === undefined) {
       return startPointBus;
     }
-    else {
-      return allBus
-    }
-  }
-  catch (err) {
+    return allBus;
+  } finally {
     await db.close();
   }
-
 }
 
-const booking = async (customerId, busId, date, noOfSeats, totalAmount, bookingStatus, seatsId, bookingId,
-  seatStatus, passengerName, passengerEmail, passengerPhone, passengerAge) => {
+async function booking(
+  customerId,
+  busId,
+  date,
+  noOfSeats,
+  totalAmount,
+  bookingStatus,
+  seatsId,
+  bookingId,
+  seatStatus,
+  passengerName,
+  passengerEmail,
+  passengerPhone,
+  passengerAge,
+) {
   try {
-    let generateTicket;
+    let messg;
+    let bookingSeatId;
     const bookBus = `select id from seats where id not in (select ticket.seats_id
               from booking inner join bus on bus.id = booking.bus_id
                inner join ticket on booking.id = ticket.booking_id  inner join seats on 
               ticket.seats_id = seats.id where bus.id = ? and booking.date = ?)`;
 
     const checkBooking = await db.query(bookBus, [busId, date]);
+
     if (checkBooking) {
-      let noOfSeat = noOfSeats;
-      let messg;
+      const noOfSeat = noOfSeats;
 
-      const bookingQuery = `insert into booking (customer_id, bus_id, date,no_of_seats, total_amount, status) values (?, ?, ?, ?, ?, ?)`;
-      const addBooking = await db.query(bookingQuery, [customerId, busId, date, noOfSeat, totalAmount, bookingStatus]);
-      const bookingIdQuery = `select id from booking where customer_id = ? AND date = ? AND bus_id = ?`;
-      const booking_id = await db.query(bookingIdQuery, [customerId, date, busId]);
+      let insertionDone = false;
 
-      for (let i of checkBooking) {
-        for (let seats of seatsId) {
-          if (i.id == seats.id) {
-            let bookingSeatId
-            for (let st of booking_id) {
-              bookingSeatId = st.id; 
-            }
-            const addTicket = `insert into ticket (bus_id, booking_id, seats_id, status, passenger_name, passenger_email, passenger_phone,passenger_age) values (?, ?, ?, ?, ?, ?, ?, ?)`;
-            generateTicket = await db.query(addTicket, [busId, bookingSeatId, seats.id, seatStatus, seats.passengerName, seats.passengerEmail, seats.passengerPhone, seats.passengerAge])
-
-          }
+      for (let i = 0; i < seatsId.length; i += 1) {
+        const elm = seatsId[i];
+        const tempArry = checkBooking.filter((x) => x.id === elm.id);
+        if (tempArry.length > 0 && !insertionDone) {
+          const bookingQuery = 'INSERT INTO booking (customer_id, bus_id, date, no_of_seats, total_amount, status) VALUES (?, ?, ?, ?, ?, ?)';
+          db.query(
+            bookingQuery,
+            [customerId, busId, date, noOfSeat, totalAmount, bookingStatus],
+          );
+          insertionDone = true;
         }
       }
-      if (generateTicket) {
-        messg = 'Seats Booked Successfully';
-        return messg;
 
+      const bookingIdQuery = `select id from booking where customer_id = ?
+       AND date = ? AND bus_id = ?`;
+      const bookingIdResult = await db.query(bookingIdQuery, [customerId, date, busId]);
+
+      checkBooking.forEach(async (i) => {
+        seatsId.forEach(async (seats) => {
+          if (i.id === seats.id) {
+            bookingIdResult.forEach(async (st) => {
+              bookingSeatId = st.id;
+            });
+            const addTicket = 'insert into ticket (bus_id, booking_id, seats_id, status, passenger_name, passenger_email, passenger_phone,passenger_age) values (?, ?, ?, ?, ?, ?, ?, ?)';
+            await db.query(
+              addTicket,
+              [busId, bookingSeatId, seats.id, seatStatus, passengerName,
+                passengerEmail, passengerPhone, passengerAge],
+            );
+          }
+        });
+      });
+      if (bookingSeatId) {
+        messg = { message: 'Seats Booked Successfully', errorType: 1 };
       } else {
-        messg = 'Error generating Ticket';
-        return { message: messg, error_type: 1 };
+        messg = { message: 'Selected seats are booked already', errorType: 0 };
       }
-
+    } else {
+      messg = 'No seats available';
     }
 
-  }
-  catch (err) {
+    return messg;
+  } catch (err) {
     await db.close();
+    return 'Error';
   }
 }
 
-const viewBooking = async (date) => {
-
+async function viewBooking(date) {
   try {
     const bookingView = `select customer.name, bus.name as busname, booking.date,
           booking.no_of_seats as noOfSeats, booking.total_amount as totalAmount, booking.status,
@@ -126,7 +147,7 @@ const viewBooking = async (date) => {
           booking.no_of_seats as noOfSeats, booking.total_amount as totalAmount, booking.status,
           route.starting_point as startingPoint, route.destination, route.boarding_time as boardingTime, route.deboarding_time as deboardingTime from booking
           inner join customer on customer.id = booking.customer_id inner join bus on bus.id = booking.bus_id
-          inner join route on bus.id = route.bus_id where booking.date = ?` ;
+          inner join route on bus.id = route.bus_id where booking.date = ?`;
 
     const allBooking = await db.query(bookingView);
     const bookingFilter = await db.query(filterByDate, [date]);
@@ -134,36 +155,23 @@ const viewBooking = async (date) => {
     if (date != null) {
       return bookingFilter;
     }
-    else {
-      return allBooking;
-    }
-  }
-  catch (err) {
+    return allBooking;
+  } finally {
     await db.close();
   }
 }
 
-const viewOffers = async () => {
+async function viewOffers() {
   try {
     const viewQuery = `select * from offers where
              current_date() <= validity_ends and current_date()>= validaity_start `;
     const viewOffer = await db.query(viewQuery);
     return viewOffer;
-  }
-  catch (err) {
+  } finally {
     await db.close();
   }
 }
 
-
-
 module.exports = {
-  viewBus, addBus, booking, viewBooking, viewOffers
-}
-
-
-
-////added ticket query inside for loop
-//aded booking query above that
-
-
+  viewBus, addBus, booking, viewBooking, viewOffers,
+};
