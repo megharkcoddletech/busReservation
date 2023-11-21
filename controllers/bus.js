@@ -112,16 +112,18 @@ const viewOffers = async (req, res) => {
 const viewTickets = async (req, res) => {
   try {
     const {
-      customerId, date, busId, bookingId,
+      customerId, busId, bookingId, startDate, endDate, limit,
     } = req.body;
-    const tickets = await busDb.viewTicket(customerId, date, busId, bookingId);
-    if (!customerId || !date || !busId || !bookingId) {
-      res.status(400).json({ success: 'false', message: 'enter all values' });
-    } else {
-      res.status(200).json({ success: 'true', message: tickets });
+    const tickets = await busDb.viewTicket(customerId, busId, bookingId, startDate, endDate, limit);
+    if (tickets.length > 0) {
+      if (!startDate || !endDate) {
+        res.status(200).json({ success: 'true', message: tickets });
+      } else {
+        res.status(200).json({ success: 'true', message: tickets });
+      }
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: 'false', message: err });
   }
 };
 

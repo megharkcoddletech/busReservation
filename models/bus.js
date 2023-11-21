@@ -96,7 +96,7 @@ async function booking(
       }
 
       const bookingIdQuery = `select id from booking where customer_id = ?
-       AND date = ? AND bus_id = ?`;
+                 and date = ? and bus_id = ?`;
       const bookingIdResult = await db.query(bookingIdQuery, [customerId, date, busId]);
 
       checkBooking.forEach(async (i) => {
@@ -167,17 +167,39 @@ async function viewOffers() {
   }
 }
 
-async function viewTicket(customerId, date, busId, bookingId) {
+async function viewTicket(customerId, busId, bookingId, startDate, endDate, limit) {
   try {
+    let result;
     const ticketQuery = `select bus.name as busName, route.starting_point, route.destination,
-            booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
-            ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
-            from ticket inner join booking on ticket.booking_id = booking.id inner join 
-            bus on booking.bus_id = bus.id inner join route on route.bus_id = bus.id inner
-            join customer on customer.id =booking.customer_id where customer.id = ?
-            and booking.date = ? and bus.id = ? and booking.id = ? `;
-    const ticketView = await db.query(ticketQuery, [customerId, date, busId, bookingId]);
-    return ticketView;
+        booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
+        ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
+        from ticket inner join booking on ticket.booking_id = booking.id
+        inner join bus on booking.bus_id = bus.id inner join route on 
+        route.bus_id = bus.id inner join customer on customer.id = booking.customer_id
+        where customer.id = ? and bus.id = ? and booking.id = ? limit ?`;
+    const ticketView = await db.query(ticketQuery, [customerId, busId, bookingId, limit]);
+
+    const dateView = `select bus.name as busName, route.starting_point, route.destination,
+        booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
+        ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
+        from ticket inner join booking on ticket.booking_id = booking.id
+        inner join bus on booking.bus_id = bus.id inner join route on route.bus_id = bus.id
+        inner join customer on customer.id = booking.customer_id
+        where customer.id = ? and bus.id = ? and booking.id = ? and
+        booking.date between ? and ? limit ?`;
+
+    const ticketByDate = await db.query(
+      dateView,
+      [customerId, busId, bookingId, startDate, endDate, limit],
+    );
+
+    if (!startDate || !endDate) {
+      result = ticketView;
+    }
+    if (startDate !== undefined && endDate !== undefined) {
+      result = ticketByDate;
+    }
+    return result;
   } finally {
     await db.close();
   }
