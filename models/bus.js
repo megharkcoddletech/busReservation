@@ -65,12 +65,7 @@ async function booking(
   totalAmount,
   bookingStatus,
   seatsId,
-  bookingId,
   seatStatus,
-  passengerName,
-  passengerEmail,
-  passengerPhone,
-  passengerAge,
 ) {
   try {
     let messg;
@@ -113,8 +108,8 @@ async function booking(
             const addTicket = 'insert into ticket (bus_id, booking_id, seats_id, status, passenger_name, passenger_email, passenger_phone,passenger_age) values (?, ?, ?, ?, ?, ?, ?, ?)';
             await db.query(
               addTicket,
-              [busId, bookingSeatId, seats.id, seatStatus, passengerName,
-                passengerEmail, passengerPhone, passengerAge],
+              [busId, bookingSeatId, i.id, seatStatus, seats.passengerName,
+                seats.passengerEmail, seats.passengerPhone, seats.passengerAge],
             );
           }
         });
@@ -172,6 +167,22 @@ async function viewOffers() {
   }
 }
 
+async function viewTicket(customerId, date, busId, bookingId) {
+  try {
+    const ticketQuery = `select bus.name as busName, route.starting_point, route.destination,
+            booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
+            ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
+            from ticket inner join booking on ticket.booking_id = booking.id inner join 
+            bus on booking.bus_id = bus.id inner join route on route.bus_id = bus.id inner
+            join customer on customer.id =booking.customer_id where customer.id = ?
+            and booking.date = ? and bus.id = ? and booking.id = ? `;
+    const ticketView = await db.query(ticketQuery, [customerId, date, busId, bookingId]);
+    return ticketView;
+  } finally {
+    await db.close();
+  }
+}
+
 module.exports = {
-  viewBus, addBus, booking, viewBooking, viewOffers,
+  viewBus, addBus, booking, viewBooking, viewOffers, viewTicket,
 };
