@@ -109,10 +109,27 @@ const viewOffers = async (req, res) => {
   }
 };
 
+const viewTickets = async (req, res) => {
+  try {
+    const {
+      customerId, date, busId, bookingId,
+    } = req.body;
+    const tickets = await busDb.viewTicket(customerId, date, busId, bookingId);
+    if (!customerId || !date || !busId || !bookingId) {
+      res.status(400).json({ success: 'false', message: 'enter all values' });
+    } else {
+      res.status(200).json({ success: 'true', message: tickets });
+    }
+  } catch (err) {
+    res.status(500).json({ success: 'false', message: 'internal server error' });
+  }
+};
+
 module.exports = {
   getBus,
   booking,
   viewBooking,
   addBus,
   viewOffers,
+  viewTickets,
 };
