@@ -1,8 +1,7 @@
 const busdb = require('../db_connection');
 
-const db = busdb.makeDb(busdb);
-
 async function addBus(name, busNumber, type, farePerKm, ratings, status) {
+  const db = busdb.makeDb(busdb);
   try {
     const bus = 'select bus_number from bus where bus_number = ?';
     const checkBus = await db.query(bus, [busNumber]);
@@ -18,27 +17,45 @@ async function addBus(name, busNumber, type, farePerKm, ratings, status) {
       result = postBus;
     }
     return result;
+  } catch (err) {
+    console.log(err);
+    return false;
   } finally {
     await db.close();
   }
 }
 
 async function viewBus(startingPoint, destination, boardingTime) {
+  const db = busdb.makeDb(busdb);
+
   try {
     const getAllBus = `select bus.id, bus.name, bus.bus_number, bus.type, bus.fare_per_km, bus.ratings,
-          bus.status,route.starting_point, route.destination, route.boarding_time, route.deboarding_time
-          from bus inner join route on bus.id = route.bus_id limit 10`;
+          bus.status,route.starting_point, route.destination, route.boarding_time, route.deboarding_time,
+          booking_amenities.m_ticket, booking_amenities.cctv,
+          booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
+          booking_amenities.emergency_contacts
+          from bus inner join route on bus.id = route.bus_id inner join booking_amenities on
+          booking_amenities.bus_id = bus.id limit 10`;
     const getBusByRoute = `select bus.id, bus.name, route.starting_point, route.destination, 
-          route.boarding_time, route.deboarding_time FROM bus INNER JOIN route
-          ON bus.id = route.bus_id WHERE route.starting_point = ? AND route.destination = ? limit 10`;
+          route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
+          booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
+          booking_amenities.emergency_contacts FROM bus INNER JOIN route
+          ON bus.id = route.bus_id inner join booking_amenities on 
+          booking_amenities.bus_id = bus.id WHERE route.starting_point = ? AND route.destination = ? limit 10`;
 
     const getBusByTime = `select bus.id, bus.name, route.starting_point, route.destination, 
-          route.boarding_time, route.deboarding_time FROM bus INNER JOIN route
-          ON bus.id = route.bus_id WHERE route.starting_point =? AND route.destination = ? and route.boarding_time = ?`;
+          route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
+          booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
+          booking_amenities.emergency_contacts FROM bus INNER JOIN route
+          ON bus.id = route.bus_id inner join booking_amenities on booking_amenities.bus_id = bus.id
+          WHERE route.starting_point =? AND route.destination = ? and route.boarding_time = ?`;
 
     const startPointOnly = `select bus.id, bus.name, route.starting_point, route.destination, 
-          route.boarding_time, route.deboarding_time FROM bus INNER JOIN route
-          ON bus.id = route.bus_id WHERE route.starting_point = ? limit 10`;
+          route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
+          booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
+          booking_amenities.emergency_contacts FROM bus INNER JOIN route
+          ON bus.id = route.bus_id inner join booking_amenities on booking_amenities.bus_id = bus.id
+          WHERE route.starting_point = ? limit 10`;
 
     const allBus = await db.query(getAllBus);
     const startPointBus = await db.query(startPointOnly, [startingPoint]);
@@ -52,6 +69,9 @@ async function viewBus(startingPoint, destination, boardingTime) {
       return startPointBus;
     }
     return allBus;
+  } catch (err) {
+    console.log(err);
+    return false;
   } finally {
     await db.close();
   }
@@ -67,6 +87,8 @@ async function booking(
   seatsId,
   seatStatus,
 ) {
+  const db = busdb.makeDb(busdb);
+
   try {
     let messg;
     let bookingSeatId;
@@ -125,12 +147,16 @@ async function booking(
 
     return messg;
   } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
     await db.close();
-    return 'Error';
   }
 }
 
 async function viewBooking(date) {
+  const db = busdb.makeDb(busdb);
+
   try {
     const bookingView = `select customer.name, bus.name as busname, booking.date,
           booking.no_of_seats as noOfSeats, booking.total_amount as totalAmount, booking.status,
@@ -151,23 +177,33 @@ async function viewBooking(date) {
       return bookingFilter;
     }
     return allBooking;
+  } catch (err) {
+    console.log(err);
+    return false;
   } finally {
     await db.close();
   }
 }
 
 async function viewOffers() {
+  const db = busdb.makeDb(busdb);
+
   try {
     const viewQuery = `select * from offers where
              current_date() <= validity_ends and current_date()>= validaity_start `;
     const viewOffer = await db.query(viewQuery);
     return viewOffer;
+  } catch (err) {
+    console.log(err);
+    return false;
   } finally {
     await db.close();
   }
 }
 
 async function viewTicket(customerId, busId, bookingId, startDate, endDate, limit) {
+  const db = busdb.makeDb(busdb);
+
   try {
     let result;
     const ticketQuery = `select bus.name as busName, route.starting_point, route.destination,
@@ -200,11 +236,76 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, limi
       result = ticketByDate;
     }
     return result;
+  } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
+    await db.close();
+  }
+}
+
+async function viewAmenities(id, startingPoint, destination) {
+  const db = busdb.makeDb(busdb);
+  try {
+    let result;
+    const amenities = `select bus.name, route.starting_point, route.destination,
+            booking_amenities.m_ticket, booking_amenities.cctv,
+            booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
+            booking_amenities.emergency_contacts from booking_amenities inner join 
+            bus on bus.id = booking_amenities.bus_id inner join route on route.bus_id = bus.id limit 3`;
+    const busAmenities = await db.query(amenities);
+    const amenitiesByBus = `select bus.name, route.starting_point, route.destination, booking_amenities.m_ticket, booking_amenities.cctv,
+            booking_amenities.reading_light, booking_amenities.blanket, booking_amenities.charging_point,
+            booking_amenities.emergency_contacts from booking_amenities inner join
+             bus on bus.id = booking_amenities.bus_id inner join route on route.bus_id = bus.id where bus.id = ?`;
+    const singleBus = await db.query(amenitiesByBus, [id]);
+    const amenitiesByRoute = `select bus.name, route.starting_point, route.destination, booking_amenities.m_ticket, booking_amenities.cctv,
+            booking_amenities.reading_light, booking_amenities.blanket, booking_amenities.charging_point,
+            booking_amenities.emergency_contacts from booking_amenities inner
+            join bus  on booking_amenities.bus_id = bus.id inner join route on route.bus_id = bus.id
+            where route.starting_point = ? and route.destination = ?`;
+    const getByRoute = await db.query(amenitiesByRoute, [startingPoint, destination]);
+    if (!id && !startingPoint && !destination) {
+      result = busAmenities;
+    } else if (!startingPoint && !destination) {
+      result = singleBus;
+    } else {
+      result = getByRoute;
+    }
+    return result;
+  } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
+    await db.close();
+  }
+}
+
+async function bookingPolicies() {
+  const db = busdb.makeDb(busdb);
+  try {
+    const viewPolicies = `select bus.name, route.starting_point, route.destination, booking_policies.refund, 
+                booking_policies.refund_description, booking_policies.cancellation,booking_policies.cancellation_description,
+                booking_policies.return_option, booking_policies.return_description  from booking_policies 
+                inner join bus on booking_policies.bus_id = bus.id inner join route on route.bus_id = bus.id limit 2`;
+    const viewAllPolicies = await db.query(viewPolicies);
+    const result = viewAllPolicies;
+    return result;
+  } catch (err) {
+    console.log(err);
+    return false;
   } finally {
     await db.close();
   }
 }
 
 module.exports = {
-  viewBus, addBus, booking, viewBooking, viewOffers, viewTicket,
+  viewBus,
+  addBus,
+  booking,
+  viewBooking,
+  viewOffers,
+  viewTicket,
+  viewAmenities,
+  bookingPolicies,
 };

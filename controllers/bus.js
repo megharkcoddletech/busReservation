@@ -6,12 +6,12 @@ async function addBus(req, res) {
       name, busNumber, type, farePerKm, ratings, status,
     } = req.body;
     const addBusQuery = await busDb.addBus(name, busNumber, type, farePerKm, ratings, status);
-    if (addBusQuery.length > 0) {
-      res.status(200).json({ success: 'false', message: 'bus already exists' });
-    }
     if (name === undefined || busNumber === undefined || type === undefined
       || farePerKm === undefined || ratings === undefined || status === undefined) {
       res.status(400).json({ success: 'false', message: 'enter all values' });
+    }
+    if (addBusQuery.length > 0) {
+      res.status(200).json({ success: 'false', message: 'bus already exists' });
     } else {
       res.status(200).json({ success: 'true', message: 'bus added' });
     }
@@ -123,7 +123,41 @@ const viewTickets = async (req, res) => {
       }
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: 'false', message: err });
+  }
+};
+
+const budAmenities = async (req, res) => {
+  try {
+    const { id, startingPoint, destination } = req.body;
+    const amenities = await busDb.viewAmenities(id, startingPoint, destination);
+    if (amenities.length > 0) {
+      if (!id && !startingPoint && !destination) {
+        res.status(200).json({ success: 'true', message: amenities });
+      } else if (!startingPoint && !destination) {
+        res.status(200).json({ success: 'true', message: amenities });
+      } else {
+        res.status(200).json({ success: 'true', message: amenities });
+      }
+    } else {
+      res.status(500).json({ success: 'false', message: 'internal server error' });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const policies = async (req, res) => {
+  try {
+    const allPolicies = await busDb.bookingPolicies();
+    if (allPolicies.length > 0) {
+      res.status(200).json({ success: 'true', message: allPolicies });
+    } else {
+      res.status(500).json({ success: 'true', message: 'error occured' });
+    }
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -134,4 +168,6 @@ module.exports = {
   addBus,
   viewOffers,
   viewTickets,
+  budAmenities,
+  policies,
 };
