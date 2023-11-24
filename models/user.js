@@ -35,13 +35,17 @@ async function login(username, password) {
   }
 }
 
-async function userImage(image, id) {
+async function userImage(name, userName, contactNumber, image, id) {
   const db = userdb.makeDb(userdb);
   try {
-    const addImage = 'update customer set image = ? where id = ?';
-    const profileImage = await db.query(addImage, [image.originalname, id]);
+    const addImage = 'update customer set name = ?, username = ?, contact_number = ?, image = ?  where id = ?';
+    const profileImage = await db.query(
+      addImage,
+      [name, userName, contactNumber, image.originalname, id],
+    );
     return profileImage;
   } catch (err) {
+    console.log(err);
     return false;
   } finally {
     await db.close();
