@@ -19,7 +19,7 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-router.post('/upadateImage', upload.single('image'), userController.upadteImage);
+router.post('/upadateProfile', upload.single('image'), userController.upadteImage);
 router.post('/signup', userController.registerUser);
 router.post('/login', userController.checkLogin);
 
