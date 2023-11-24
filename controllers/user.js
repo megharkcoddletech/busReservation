@@ -59,14 +59,19 @@ const upadteImage = async (req, res) => {
     const {
       name, userName, contactNumber, id,
     } = req.body;
+
     const image = req.file;
+    if (image.size > 2000000) {
+      res.status(400).json({ success: 'false', message: 'upload file less than 2mb' });
+    }
+
     const url = `http://localhost:3001/uploads/${req.file.filename}`;
+
     const addImage = await userDb.userImage(name, userName, contactNumber, image, id);
     if (addImage) {
       res.status(200).json({ success: 'true', message: addImage, url });
     }
   } catch (err) {
-    console.log(err);
     res.status(500).json({ success: 'false', message: 'internal server error' });
   }
 };
