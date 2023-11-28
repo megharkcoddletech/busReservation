@@ -54,22 +54,19 @@ const checkLogin = async (req, res) => {
 const upadteImage = async (req, res) => {
   try {
     if (!req.file) {
-      res.status(400).json({ success: 'false', message: 'invalid image' });
-    }
-    const {
-      name, userName, contactNumber, id,
-    } = req.body;
+      res.status(400).json({ success: 'false', message: 'image should be in jpeg/jpg format and file size should not exceeds 2mb' });
+    } else {
+      const {
+        name, contactNumber, id,
+      } = req.body;
 
-    const image = req.file;
-    if (image.size > 2000000) {
-      res.status(400).json({ success: 'false', message: 'upload file less than 2mb' });
-    }
+      const image = req.file;
+      const url = `http://localhost:3001/uploads/${req.file.filename}`;
 
-    const url = `http://localhost:3001/uploads/${req.file.filename}`;
-
-    const addImage = await userDb.userImage(name, userName, contactNumber, image, id);
-    if (addImage) {
-      res.status(200).json({ success: 'true', message: addImage, url });
+      const addImage = await userDb.userImage(name, contactNumber, image, id);
+      if (addImage) {
+        res.status(200).json({ success: 'true', url });
+      }
     }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
