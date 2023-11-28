@@ -35,15 +35,23 @@ async function login(username, password) {
   }
 }
 
-async function userImage(name, userName, contactNumber, image, id) {
+async function userImage(name, contactNumber, image, id) {
   const db = userdb.makeDb(userdb);
   try {
-    const addImage = 'update customer set name = ?, username = ?, contact_number = ?, image = ?  where id = ?';
+    let result;
+    const addImage = 'update customer set image = ? where id = ?';
+    const uploadImg = await db.query(addImage, [image.originalname, id]);
+    const editProfile = 'update customer set name = ?, contact_number = ?, image = ?  where id = ?';
     const profileImage = await db.query(
-      addImage,
-      [name, userName, contactNumber, image.originalname, id],
+      editProfile,
+      [name, contactNumber, image.originalname, id],
     );
-    return profileImage;
+    if (!name || !contactNumber) {
+      result = uploadImg;
+    } else {
+      result = profileImage;
+    }
+    return result;
   } catch (err) {
     console.log(err);
     return false;
