@@ -161,6 +161,21 @@ const policies = async (req, res) => {
   }
 };
 
+const bookingCancel = async (req, res) => {
+  try {
+    const { bookingId, seatsToCancel } = req.body;
+    const cancelBooking = await busDb.cancelBookings(bookingId, seatsToCancel);
+
+    if (cancelBooking) {
+      res.status(200).json({ success: true, message: 'booking canceled' });
+    } else {
+      res.status(400).json({ success: false, message: 'error occurred' });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 module.exports = {
   getBus,
   booking,
@@ -170,4 +185,5 @@ module.exports = {
   viewTickets,
   budAmenities,
   policies,
+  bookingCancel,
 };

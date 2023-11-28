@@ -14,5 +14,6 @@ router.post('/addBus', busController.addBus);
 router.get('/viewTicket', verifyToken, busController.viewTickets);
 router.get('/viewAmenities', verifyToken, busController.budAmenities);
 router.get('/viewPolicies', verifyToken, busController.policies);
+router.put('/cancelBooking', verifyToken, busController.bookingCancel);
 
 module.exports = router;
