@@ -85,7 +85,6 @@ async function booking(
   totalAmount,
   bookingStatus,
   seatsId,
-  seatStatus,
 ) {
   const db = busdb.makeDb(busdb);
 
@@ -95,10 +94,9 @@ async function booking(
     const bookBus = `select id from seats where id not in (select ticket.seats_id
               from booking inner join bus on bus.id = booking.bus_id
                inner join ticket on booking.id = ticket.booking_id  inner join seats on 
-              ticket.seats_id = seats.id where bus.id = ? and booking.date = ?)`;
+              ticket.seats_id = seats.id where bus.id = ? and booking.date = ? and ticket.status != "cancelled")`;
 
     const checkBooking = await db.query(bookBus, [busId, date]);
-
     if (checkBooking) {
       const noOfSeat = noOfSeats;
 
@@ -130,7 +128,7 @@ async function booking(
             const addTicket = 'insert into ticket (bus_id, booking_id, seats_id, status, passenger_name, passenger_email, passenger_phone,passenger_age) values (?, ?, ?, ?, ?, ?, ?, ?)';
             await db.query(
               addTicket,
-              [busId, bookingSeatId, i.id, seatStatus, seats.passengerName,
+              [busId, bookingSeatId, i.id, seats.status, seats.passengerName,
                 seats.passengerEmail, seats.passengerPhone, seats.passengerAge],
             );
           }
@@ -299,6 +297,37 @@ async function bookingPolicies() {
   }
 }
 
+async function cancelBookings(bookingId, seatsToCancel) {
+  const db = busdb.makeDb(busdb.makeDb);
+  try {
+    const selectTicket = 'select seats_id from ticket where booking_id = ? and status = "booked"';
+    const bookedSeats = await db.query(selectTicket, [bookingId]);
+    if (bookedSeats.length > 0) {
+      if (seatsToCancel.length > 0) {
+        for (let i = 0; i < seatsToCancel.length; i += 1) {
+          for (let j = 0; j < bookedSeats.length; j += 1) {
+            if (seatsToCancel[i] === bookedSeats[j].seats_id) {
+              const updateTicket = 'update ticket set status = "cancelled" where booking_id = ? and seats_id in (?)';
+              db.query(updateTicket, [bookingId, seatsToCancel[i]]);
+              if (i === seatsToCancel.length) {
+                const cancelBookingQuery = 'update booking set status = "cancelled" where id = ?';
+                db.query(cancelBookingQuery, [bookingId]);
+              }
+            }
+          }
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  } catch (err) {
+    return false;
+  } finally {
+    await db.close();
+  }
+}
+
 module.exports = {
   viewBus,
   addBus,
@@ -308,4 +337,5 @@ module.exports = {
   viewTicket,
   viewAmenities,
   bookingPolicies,
+  cancelBookings,
 };
