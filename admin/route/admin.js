@@ -14,4 +14,5 @@ router.get('/viewOffers', adminController.viewOffers);
 
 router.get('/viewTicket', adminController.viewTickets);
 
+router.post('/addOffer', adminController.addOffer);
 module.exports = router;

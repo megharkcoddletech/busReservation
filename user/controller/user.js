@@ -61,12 +61,10 @@ const booking = async (req, res) => {
     if (addBooking.length > 0 && addBooking.seatsId != null) {
       res.status(404).json({ success: 'false', message: 'booking already exists' });
     } else if (addBooking.errorType !== 1) {
-      console.log('false', addBooking);
       res.status(200).json({ success: 'false', message: addBooking.message });
     } else if (addBooking.errorType !== 0) {
       res.status(400).send(`${addBooking.message}`);
     } else {
-      console.log('true', addBooking);
       res.status(200).json({ success: 'true', message: addBooking.message });
     }
   } catch (err) {
@@ -134,7 +132,7 @@ const bookingCancel = async (req, res) => {
       res.status(400).json({ success: false, message: 'error occurred' });
     }
   } catch (err) {
-    console.error(err);
+    console.log(err);
   }
 };
 
@@ -152,7 +150,7 @@ const viewSeats = async (req, res) => {
     if (addBooking.length < 0) {
       res.status(404).json({ success: 'false', message: 'booking already exists' });
     } else {
-      res.status(200).json({ success: 'true', message: addBooking.message, offer: addBooking.off });
+      res.status(200).json({ success: 'true', message: addBooking.message });
     }
   } catch (err) {
     console.log(err);

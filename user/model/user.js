@@ -131,12 +131,9 @@ async function booking(
                 )`;
 
     const checkBooking = await db.query(bookBus, [busId, date]);
-    console.log('cheh', checkBooking);
     if (checkBooking) {
       const noOfSeat = noOfSeats;
-      // console.log('avail seat', checkBooking);
       let insertionDone = false;
-      // console.log('seats is mod', seatsId);
       let tAmount = 0;
       let oAmount = 0;
       for (let i = 0; i < seatsId.length; i += 1) {
@@ -182,48 +179,20 @@ async function booking(
           }
         });
       });
-      console.log('out', total);
-      console.log('id', bookingId);
-      // let offerRate = total * (10 / 100);
       const addTotal = `update booking set total_amount = ${total} where id = ${bookingId}`;
       await db.query(addTotal);
-      console.log('final cost', total);
       const offerRate = 10 / 100;
-      // console.log('filterSeat', filterSeat);
       const sArray = [];
       for (let off = 0; off < checkBooking.length; off += 1) {
-        console.log('////////////////////////////////////////////');
         sArray.push(checkBooking[off].seatCost);
       }
-      console.log('sAr', sArray);
       const lastAr = [];
       for (let off = 0; off < sArray.length; off += 1) {
         const a = sArray[off] - (sArray[off] * offerRate);
         lastAr.push(a);
       }
-      console.log('last array', lastAr);
-      // sArray.forEach((singleSeat) => {
-      //   singleSeat -= (singleSeat * offerRate);
-      // });
-      console.log(checkBooking);
       if (bookingId) {
-        messg = {
-          message: `<p>10% discount on booking</p> <BR>
-        <table>
-        <tr>
-        <th>seat no</th>
-        <th>cost<th>
-        <th><th>
-        </tr>
-        <tr>
-        <td>${checkBooking[0].id} </td>
-        <td> <span style="text-decoration:line-through">${checkBooking[0].seatCost}</span>${lastAr[0]} </td>
-        <td><input type = 'checkbox'></td>
-        </tr>
-        </table>
-         <total cost : ${total}, you have10% discount`,
-          errorType: 1,
-        };
+        messg = { message: 'Seats Booked Successfully', errorType: 1 };
       } else {
         messg = { message: 'Selected seats are booked already', errorType: 0 };
       }

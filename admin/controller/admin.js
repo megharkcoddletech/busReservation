@@ -100,10 +100,42 @@ const viewTickets = async (req, res) => {
   }
 };
 
+const addOffer = async (req, res) => {
+  try {
+    const {
+      busId, offerName, offerDescription, rate, StartDate, endDate, conditions,
+    } = req.body;
+    const { body } = req;
+    if (!body.offerName || !body.offerDescription
+      || !body.rate || !body.StartDate || !body.endDate || !body.conditions) {
+      res.status(400).json({ success: false, message: 'enter details' });
+    }
+    const offer = await adminDb.addOffer(
+      busId,
+      offerName,
+      offerDescription,
+      rate,
+      StartDate,
+      endDate,
+      conditions,
+    );
+    if (offer) {
+      if (body.busId === undefined) {
+        res.status(200).json({ success: true, message: 'offer added for all bus' });
+      }
+      res.status(200).json({ success: true, message: `offer added for ${busId}` });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: 'false', message: err });
+  }
+};
+
 module.exports = {
   addBus,
   getBus,
   viewBooking,
   viewOffers,
   viewTickets,
+  addOffer,
 };
