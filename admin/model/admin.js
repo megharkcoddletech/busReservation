@@ -167,7 +167,7 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, limi
   }
 }
 
-async function addOffer(busId, offerName, offerDescription, rate, StartDate, endDate, conditions) {
+async function addOffer(busId, offerName, offerDescription, rate, StartDate, endDate, seatType) {
   const db = adminDb.makeDb(adminDb);
   let result;
   try {
@@ -180,13 +180,13 @@ async function addOffer(busId, offerName, offerDescription, rate, StartDate, end
     if (busId !== null) {
       const singleBusoffer = await db.query(
         singleBus,
-        [busId, offerName, offerDescription, rate, StartDate, endDate, conditions],
+        [busId, offerName, offerDescription, rate, StartDate, endDate, seatType],
       );
       result = singleBusoffer;
     } else {
       const offerForAll = await db.query(
         allBus,
-        [offerName, offerDescription, rate, StartDate, endDate, conditions],
+        [offerName, offerDescription, rate, StartDate, endDate, seatType],
       );
       result = offerForAll;
     }

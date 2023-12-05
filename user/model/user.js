@@ -59,7 +59,7 @@ async function viewSeats(
   try {
     let messg;
     let offerCost = 0;
-    const bookBus = `select seats.bus_id,seats.id, (seats.rate + route.distance * bus.fare_per_km) AS seatCost,seat_type
+    const bookBus = `select seats.bus_id as busId,seats.id, (seats.rate + route.distance * bus.fare_per_km) AS seatCost,seat_type as seatType
                 from seats inner join bus on seats.bus_id = bus.id
                 inner join route on route.bus_id = bus.id
                 where seats.id not in (select ticket.seats_id from booking
@@ -70,22 +70,49 @@ async function viewSeats(
                 )`;
     const checkBooking = await db.query(bookBus, [date]);
     if (checkBooking) {
-      const viewOfferbyDate = `select rate, conditions from offers where
+      const key = 'offerPrice';
+
+      const viewOfferbyDate = `select bus_id as busId, rate, conditions as seatType from offers where
             current_date() <= validity_ends and current_date()>= validaity_start`;
       const offer = await db.query(viewOfferbyDate);
-      const offerRate = (offer[0].rate) / 100;
-      if (offerRate) {
-        for (let off = 0; off < checkBooking.length; off += 1) {
-          for (let c = 0; c < offer.length; c += 1) {
-            const key = 'offerPrice';
-            if (checkBooking[off].seat_type === offer[c].conditions) {
-              offerCost = (parseInt(checkBooking[off].seatCost, 10)
-                            - parseInt(checkBooking[off].seatCost, 10) * offerRate);
-              checkBooking[off][key] = offerCost;
-            } else {
-              checkBooking[off][key] = offerCost;
+      if (offer) {
+        for (let c = 0; c < offer.length; c += 1) {
+          for (let off = 0; off < checkBooking.length; off += 1) {
+            if (offer[c].busId === null) {
+              const offerRate = (offer[c].rate) / 100;
+
+              if (offer[c].seatType === checkBooking[off].seatType) {
+                offerCost = (parseInt(checkBooking[off].seatCost, 10)
+                           - parseInt(checkBooking[off].seatCost, 10) * offerRate);
+                checkBooking[off][key] = offerCost;
+              } else if (offer[c].seatType === 'all') {
+                offerCost = (parseInt(checkBooking[off].seatCost, 10)
+                           - parseInt(checkBooking[off].seatCost, 10) * offerRate);
+                checkBooking[off][key] = offerCost;
+              } else {
+                checkBooking[off][key] = offerCost;
+              }
+            } else if (offer[c].busId === checkBooking[off].busId) {
+              const offerRate = (offer[c].rate) / 100;
+
+              if (checkBooking[off].seatType === offer[c].seatType) {
+                offerCost = (parseInt(checkBooking[off].seatCost, 10)
+                              - parseInt(checkBooking[off].seatCost, 10) * offerRate);
+                checkBooking[off][key] = offerCost;
+              } else if (offer[c].seatType === 'all') {
+                offerCost = (parseInt(checkBooking[off].seatCost, 10)
+                - parseInt(checkBooking[off].seatCost, 10) * offerRate);
+                checkBooking[off][key] = offerCost;
+              } else {
+                offerCost = 0;
+                checkBooking[off][key] = offerCost;
+              }
             }
           }
+        }
+      } else {
+        for (let i = 0; i < checkBooking.length; i += 1) {
+          checkBooking[i][key] = offerCost;
         }
       }
       if (checkBooking) {
