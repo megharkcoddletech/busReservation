@@ -167,20 +167,37 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, limi
   }
 }
 
-// async function addOffer() {
-//   const db = adminDb.makeDb(adminDb);
-//   try {
+async function addOffer(busId, offerName, offerDescription, rate, StartDate, endDate, conditions) {
+  const db = adminDb.makeDb(adminDb);
+  let result;
+  try {
+    const singleBus = `insert into offers
+                   (bus_id,offer_name, offer_description, rate, validaity_start, validity_ends, conditions) values(?, ?, ?, ?, ?, ? ,?) `;
 
-//     //if bokking.amount is 600 then 500;
-//     // const offer = 'insert into offers()  ';
-//     const offerDetails = `insert into offers
-//         (bus_id,offer_name, offer_description, rate, validity_start, validity_ends) values`;
-//   } catch (err) {
+    const allBus = `insert into offers
+                    (offer_name, offer_description, rate, validaity_start, validity_ends, conditions) values(?, ?, ?, ?, ? ,?) `;
 
-//   } finally {
-//     await db.close();
-//   }
-// }
+    if (busId !== null) {
+      const singleBusoffer = await db.query(
+        singleBus,
+        [busId, offerName, offerDescription, rate, StartDate, endDate, conditions],
+      );
+      result = singleBusoffer;
+    } else {
+      const offerForAll = await db.query(
+        allBus,
+        [offerName, offerDescription, rate, StartDate, endDate, conditions],
+      );
+      result = offerForAll;
+    }
+    return result;
+  } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
+    await db.close();
+  }
+}
 
 module.exports = {
   addBus,
@@ -188,5 +205,5 @@ module.exports = {
   viewBooking,
   viewOffers,
   viewTicket,
-  // addOffer,
+  addOffer,
 };
