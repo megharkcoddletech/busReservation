@@ -103,11 +103,11 @@ const viewTickets = async (req, res) => {
 const addOffer = async (req, res) => {
   try {
     const {
-      busId, offerName, offerDescription, rate, StartDate, endDate, conditions,
+      busId, offerName, offerDescription, rate, StartDate, endDate, seatType,
     } = req.body;
     const { body } = req;
     if (!body.offerName || !body.offerDescription
-      || !body.rate || !body.StartDate || !body.endDate || !body.conditions) {
+      || !body.rate || !body.StartDate || !body.endDate || !body.seatType) {
       res.status(400).json({ success: false, message: 'enter details' });
     }
     const offer = await adminDb.addOffer(
@@ -117,7 +117,7 @@ const addOffer = async (req, res) => {
       rate,
       StartDate,
       endDate,
-      conditions,
+      seatType,
     );
     if (offer) {
       if (body.busId === undefined) {
