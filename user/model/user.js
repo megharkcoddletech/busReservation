@@ -160,25 +160,17 @@ async function booking(
     if (checkBooking) {
       const noOfSeat = noOfSeats;
       let insertionDone = false;
-      let tAmount = 0;
-      let oAmount = 0;
       for (let i = 0; i < seatsId.length; i += 1) {
         const seats = seatsId[i];
         const tempArry = checkBooking.filter((x) => x.id === seats.id);
         if (tempArry.length > 0) {
-          tAmount = tempArry[0].seatCost;
-          console.log('okkkkk', tAmount);
           if (!insertionDone) {
-            // console.log('ok', tAmount);
             const bookingQuery = 'insert into booking (customer_id, bus_id, date, no_of_seats, total_amount, status) values (?, ?, ?, ?, ?, ?)';
             db.query(
               bookingQuery,
               [customerId, busId, date, noOfSeat, totalAmount, bookingStatus],
             );
             insertionDone = true;
-            oAmount += tAmount;
-            console.log('omnut', oAmount);
-            console.log('true', tAmount);
           }
         }
       }
@@ -187,11 +179,9 @@ async function booking(
       const bookingIdResult = await db.query(bookingIdQuery, [customerId, date, busId]);
       let total = 0;
       checkBooking.forEach(async (i) => {
-        console.log('ii', i);
         seatsId.forEach(async (seats) => {
           if (i.id === seats.id) {
             total += (i.seatCost);
-            console.log(total);
             bookingIdResult.forEach(async (st) => {
               bookingId = st.id;
             });
