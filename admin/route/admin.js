@@ -1,18 +1,19 @@
 const express = require('express');
 
 const adminController = require('../controller/admin');
+const { verifyToken } = require('../../middleWare/middleWare');
 
 const router = express.Router();
 
-router.post('/addBus', adminController.addBus);
+router.post('/addBus', verifyToken, adminController.addBus);
 
-router.get('/viewBuses', adminController.getBus);
+router.get('/viewBuses', verifyToken, adminController.getBus);
 
-router.get('/viewBooking', adminController.viewBooking);
+router.get('/viewBooking', verifyToken, adminController.viewBooking);
 
-router.get('/viewOffers', adminController.viewOffers);
+router.get('/viewOffers', verifyToken, adminController.viewOffers);
 
-router.get('/viewTicket', adminController.viewTickets);
+router.get('/viewTicket', verifyToken, adminController.viewTickets);
 
-router.post('/addOffer', adminController.addOffer);
+router.post('/addOffer', verifyToken, adminController.addOffer);
 module.exports = router;

@@ -96,7 +96,11 @@ const viewBooking = async (req, res) => {
 const viewOffers = async (req, res) => {
   try {
     const currentOffers = await busDb.viewOffers();
-    res.status(200).json({ success: 'true', message: currentOffers });
+    if (currentOffers.length > 0) {
+      res.status(200).json({ success: 'true', message: currentOffers });
+    } else {
+      res.status(200).json({ success: 'true', message: 'no offers' });
+    }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
   }
@@ -114,6 +118,8 @@ const viewTickets = async (req, res) => {
       } else {
         res.status(200).json({ success: 'true', message: tickets });
       }
+    } else {
+      res.status(200).json({ success: 'true', message: 'no booking' });
     }
   } catch (err) {
     console.log(err);
@@ -125,14 +131,14 @@ const bookingCancel = async (req, res) => {
   try {
     const { bookingId, seatsToCancel } = req.body;
     const cancelBooking = await busDb.cancelBookings(bookingId, seatsToCancel);
-
     if (cancelBooking) {
       res.status(200).json({ success: true, message: 'booking canceled' });
     } else {
-      res.status(400).json({ success: false, message: 'error occurred' });
+      res.status(400).json({ success: true, message: 'no bookings' });
     }
   } catch (err) {
     console.log(err);
+    res.status(200).json({ success: false, message: err });
   }
 };
 
@@ -150,7 +156,7 @@ const viewSeats = async (req, res) => {
     if (addBooking.length < 0) {
       res.status(404).json({ success: 'false', message: 'booking already exists' });
     } else {
-      res.status(200).json({ success: 'true', message: addBooking.message });
+      res.status(200).json({ success: 'true', message: addBooking.message, token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDE4NDI3MzcsImV4cCI6MTcwMTg0NTczN30.OIjDI1I2EUA4FdwviiOzMl_ab47rKqC8-tgceycv4Ak' });
     }
   } catch (err) {
     console.log(err);

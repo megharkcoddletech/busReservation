@@ -5,15 +5,17 @@ async function addBus(req, res) {
     const {
       name, busNumber, type, farePerKm, ratings, status,
     } = req.body;
-    const addBusQuery = await adminDb.addBus(name, busNumber, type, farePerKm, ratings, status);
-    if (name === undefined || busNumber === undefined || type === undefined
-    || farePerKm === undefined || ratings === undefined || status === undefined) {
+    const { body } = req;
+    if (body.name === undefined || body.busNumber === undefined || body.type === undefined
+      || body.farePerKm === undefined || body.ratings === undefined || body.status === undefined) {
       res.status(400).json({ success: 'false', message: 'enter all values' });
-    }
-    if (addBusQuery.length > 0) {
-      res.status(200).json({ success: 'false', message: 'bus already exists' });
     } else {
-      res.status(200).json({ success: 'true', message: 'bus added' });
+      const addBusQuery = await adminDb.addBus(name, busNumber, type, farePerKm, ratings, status);
+      if (addBusQuery.length > 0) {
+        res.status(200).json({ success: 'false', message: 'bus already exists' });
+      } else {
+        res.status(200).json({ success: 'true', message: 'bus added' });
+      }
     }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
@@ -68,7 +70,11 @@ const viewBooking = async (req, res) => {
 const viewOffers = async (req, res) => {
   try {
     const currentOffers = await adminDb.viewOffers();
-    res.status(200).json({ success: 'true', message: currentOffers });
+    if (currentOffers.length > 0) {
+      res.status(200).json({ success: 'true', message: currentOffers });
+    } else {
+      res.status(200).json({ success: true, message: 'no offer exists' });
+    }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
   }
@@ -79,19 +85,24 @@ const viewTickets = async (req, res) => {
     const {
       customerId, busId, bookingId, startDate, endDate, limit,
     } = req.body;
-    const tickets = await adminDb.viewTicket(
-      customerId,
-      busId,
-      bookingId,
-      startDate,
-      endDate,
-      limit,
-    );
-    if (tickets.length > 0) {
-      if (!startDate || !endDate) {
-        res.status(200).json({ success: 'true', message: tickets });
-      } else {
-        res.status(200).json({ success: 'true', message: tickets });
+    const { body } = req;
+    if (!body.customerId || !body.busId || !bookingId) {
+      res.status(400).json({ success: false, message: 'enter details' });
+    } else {
+      const tickets = await adminDb.viewTicket(
+        customerId,
+        busId,
+        bookingId,
+        startDate,
+        endDate,
+        limit,
+      );
+      if (tickets.length > 0) {
+        if (!body.startDate || !body.endDate) {
+          res.status(200).json({ success: 'true', message: tickets });
+        } else {
+          res.status(200).json({ success: 'true', message: tickets });
+        }
       }
     }
   } catch (err) {
@@ -109,21 +120,23 @@ const addOffer = async (req, res) => {
     if (!body.offerName || !body.offerDescription
       || !body.rate || !body.StartDate || !body.endDate || !body.seatType) {
       res.status(400).json({ success: false, message: 'enter details' });
-    }
-    const offer = await adminDb.addOffer(
-      busId,
-      offerName,
-      offerDescription,
-      rate,
-      StartDate,
-      endDate,
-      seatType,
-    );
-    if (offer) {
-      if (body.busId === undefined) {
-        res.status(200).json({ success: true, message: 'offer added for all bus' });
+    } else {
+      const offer = await adminDb.addOffer(
+        busId,
+        offerName,
+        offerDescription,
+        rate,
+        StartDate,
+        endDate,
+        seatType,
+      );
+      if (offer) {
+        if (body.busId === undefined) {
+          res.status(200).json({ success: true, message: 'offer added for all bus' });
+        } else {
+          res.status(200).json({ success: true, message: `offer added for ${busId}` });
+        }
       }
-      res.status(200).json({ success: true, message: `offer added for ${busId}` });
     }
   } catch (err) {
     console.log(err);

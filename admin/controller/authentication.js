@@ -4,9 +4,11 @@ const adminDb = require('../model/authentication');
 const checkLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const checkLoginQuery = await adminDb.login(username, password);
     const { body } = req;
-
+    if (body.username === undefined || body.password === undefined) {
+      res.status(400).json({ success: false, message: 'enter username and password' });
+    }
+    const checkLoginQuery = await adminDb.login(username, password);
     if (checkLoginQuery.length > 0) {
       if (checkLoginQuery[0].username === body.username
         && checkLoginQuery[0].password === body.password) {
@@ -18,10 +20,10 @@ const checkLogin = async (req, res) => {
       }
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: 'false', message: 'internal server error' });
   }
 };
-
 module.exports = {
   checkLogin,
 };
