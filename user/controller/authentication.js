@@ -68,7 +68,6 @@ const upadteImage = async (req, res) => {
     const url = `http://localhost:3001/uploads/${req.file.filename}`;
 
     const addImage = await userDb.userImage(name, contactNumber, image, id);
-    console.log(addImage);
     if (addImage) {
       res.status(200).json({ success: 'true', url });
     }
