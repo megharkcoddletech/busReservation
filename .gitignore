@@ -6,31 +6,3 @@
 /models
 /routes
 
-To remove a file from the master branch in Git, you can use the git rm command followed by the file name, and then commit the changes. Here are the steps:
-
-Open a terminal or command prompt.
-
-Navigate to the root directory of your Git repository.
-
-Use the following command to remove the file from the master branch:
-
-bash
-Copy code
-git rm filename
-Replace "filename" with the actual name of the file you want to remove.
-
-After removing the file, you need to commit the changes. Use the following command:
-
-bash
-Copy code
-git commit -m "Remove filename from master branch"
-Replace "filename" with the actual name of the file.
-
-Finally, push the changes to the remote repository if you want the changes to be reflected there:
-
-bash
-Copy code
-git push origin master
-These steps assume you are working with the master branch. If you are on a different branch, you may need to switch to the master branch using the git checkout master command before performing the removal and committing the changes.
-
-Keep in mind that this will only remove the file from the latest commit in the master branch. If the file has been committed in previous commits, it will still be present in those historical commits. If you want to remove the file from the entire history of the repository, you might need to consider more advanced Git history-rewriting techniques, such as using filter-branch or filter-repo. However, use these with caution, especially if the repository is shared with others, as it can impact 
