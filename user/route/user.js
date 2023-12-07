@@ -14,5 +14,6 @@ router.get('/viewTicket', verifyToken, bus.viewTickets);
 router.put('/cancelBooking', verifyToken, bus.bookingCancel);
 router.get('/adBooking', verifyToken, bus.booking);
 router.all('/viewSeats', verifyToken, bus.viewSeats);
+router.post('/addReview', verifyToken, bus.addReview);
 
 module.exports = router;
