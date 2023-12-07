@@ -133,6 +133,27 @@ const viewSeats = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  try {
+    const {
+      busId, customerId, review, suggestions,
+    } = req.body;
+    if (busId === undefined || customerId === undefined
+      || review === undefined) {
+      res.status(400).json({ success: false, message: 'enter all details' });
+    } else {
+      const reviewAdded = await busDb.busReview(busId, customerId, review, suggestions);
+      if (reviewAdded) {
+        res.status(200).json({ success: true, message: 'review added' });
+      } else {
+        res.status(400).json({ success: false, message: 'error occured' });
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   getBus,
   booking,
@@ -141,4 +162,5 @@ module.exports = {
   viewTickets,
   bookingCancel,
   viewSeats,
+  addReview,
 };

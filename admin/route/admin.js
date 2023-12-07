@@ -16,4 +16,7 @@ router.get('/viewOffers', verifyToken, adminController.viewOffers);
 router.get('/viewTicket', verifyToken, adminController.viewTickets);
 
 router.post('/addOffer', verifyToken, adminController.addOffer);
+
+router.get('/viewReview', verifyToken, adminController.viewReview);
+
 module.exports = router;

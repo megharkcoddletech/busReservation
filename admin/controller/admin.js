@@ -122,6 +122,22 @@ const addOffer = async (req, res) => {
   }
 };
 
+const viewReview = async (req, res) => {
+  try {
+    const {
+      busId,
+    } = req.body;
+    const review = await adminDb.viewReview(busId);
+    if (review.length > 0) {
+      res.status(200).json({ success: true, message: review });
+    } else {
+      res.status(400).json({ success: false, message: 'no reviews' });
+    }
+  } catch (err) {
+    res.status(200).json({ success: false, message: err });
+  }
+};
+
 module.exports = {
   addBus,
   getBus,
@@ -129,4 +145,5 @@ module.exports = {
   viewOffers,
   viewTickets,
   addOffer,
+  viewReview,
 };

@@ -187,6 +187,32 @@ async function addOffer(busId, offerName, offerDescription, rate, StartDate, end
   }
 }
 
+async function viewReview(busId) {
+  const db = adminDb.makeDb();
+  try {
+    let result;
+    if (busId !== undefined) {
+      const getReview = `select bus.name, customer.name as customer, bus_review.reiew as review,
+                    bus_review.suggestions, DATE_FORMAT(bus_review.created, '%Y-%m-%d') as date
+                    from bus_review inner join bus on bus_review.bus_id = bus.id
+                    inner join customer on bus_review.cust_id = customer.id where bus_id = ?`;
+      result = await db.query(getReview, busId);
+    } else {
+      const allReview = `select bus.name, customer.name as customer, bus_review.reiew as review,
+                    bus_review.suggestions, DATE_FORMAT(bus_review.created, '%Y-%m-%d') as date
+                    from bus_review inner join bus on bus_review.bus_id = bus.id
+                    inner join customer on bus_review.cust_id = customer.id`;
+      result = await db.query(allReview);
+    }
+    return result;
+  } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
+    await db.close();
+  }
+}
+
 module.exports = {
   addBus,
   viewBus,
@@ -194,4 +220,5 @@ module.exports = {
   viewOffers,
   viewTicket,
   addOffer,
+  viewReview,
 };

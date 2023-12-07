@@ -328,6 +328,24 @@ async function cancelBookings(bookingId, seatsToCancel) {
   }
 }
 
+async function busReview(busId, customerId, review, suggestions) {
+  const db = busdb.makeDb();
+  try {
+    let result;
+    if (busId !== undefined || customerId !== undefined
+      || review !== undefined || suggestions !== undefined) {
+      const insertReview = 'insert into bus_review(bus_id, cust_id, reiew, suggestions) values (?, ?, ?, ?)';
+      result = await db.query(insertReview, [busId, customerId, review, suggestions]);
+    }
+    return result;
+  } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
+    await db.close();
+  }
+}
+
 module.exports = {
   viewBus,
   booking,
@@ -336,4 +354,5 @@ module.exports = {
   viewTicket,
   cancelBookings,
   viewSeats,
+  busReview,
 };
