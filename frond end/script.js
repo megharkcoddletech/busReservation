@@ -8,15 +8,25 @@ const select = document.querySelector('.select');
 const b2 = document.querySelector('.b2');
 const seatArray = [];
 const seatID = [];
-
-bus1.addEventListener('click', () => {
+bus1.addEventListener('click', async () => {
   b2.style.display = 'none';
   select.style.display = 'block';
   img1.style.display = 'block';
   s1.style.display = 'block';
-  const url = 'http://localhost:3001/user/viewSeats';
+  const date = '2023-12-12';
+  const encodeDate = encodeURIComponent(date);
 
-  fetch(url)
+  const url = `http://localhost:3001/user/viewSeats?date = ${encodeDate}`;
+  await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDE5MjA5NjAsImV4cCI6MTcwMTkyMzk2MH0.LqsT6aY8T6Yhd41mP31vg9Ho2eGAgkn_LH7fGpg95H8',
+    },
+    body: JSON.stringify({ date }),
+
+  })
     .then((response) => response.json())
     .then((data) => {
       seatArray.push(data.message);

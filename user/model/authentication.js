@@ -1,10 +1,12 @@
 const userdb = require('../../db_connection');
 
 async function createUser(name, username, password, email, age, contactNumber, gender) {
-  const db = userdb.makeDb(userdb);
+  const db = userdb.makeDb();
   try {
     let result;
-    if (email !== undefined) {
+    if (email !== undefined && name !== undefined && username !== undefined
+      && password !== undefined && age !== undefined && contactNumber !== undefined
+      && gender !== undefined) {
       const users = 'select * from customer where email = ?';
       const checkUser = await db.query(users, [email]);
       if (checkUser.length > 0) {
@@ -20,13 +22,15 @@ async function createUser(name, username, password, email, age, contactNumber, g
     }
     return result;
   } catch (err) {
+    console.log(err);
+    return false;
+  } finally {
     await db.close();
-    throw err;
   }
 }
 
 async function login(username, password) {
-  const db = userdb.makeDb(userdb);
+  const db = userdb.makeDb();
   try {
     let result;
     if (username !== undefined && password !== undefined) {
@@ -44,10 +48,10 @@ async function login(username, password) {
 }
 
 async function userImage(name, contactNumber, image, id) {
-  const db = userdb.makeDb(userdb);
+  const db = userdb.makeDb();
   try {
     let result;
-    if (!name || !contactNumber) {
+    if ((!name || !contactNumber) && (image !== undefined && id !== undefined)) {
       const addImage = 'update customer set image = ? where id = ?';
       const uploadImg = await db.query(addImage, [image.originalname, id]);
       result = uploadImg;
