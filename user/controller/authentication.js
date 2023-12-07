@@ -6,10 +6,9 @@ const registerUser = async (req, res) => {
     const {
       name, username, password, email, age, contactNumber, gender,
     } = req.body;
-    const { body } = req;
-    if (body.name === undefined || body.password === undefined || body.username === undefined
-      || body.email === undefined || body.age === undefined || body.contactNumber === undefined
-      || body.gender === undefined) {
+    if (name === undefined || password === undefined || username === undefined
+      || email === undefined || age === undefined || contactNumber === undefined
+      || gender === undefined) {
       res.status(400).json({ success: 'false', message: 'Fill the empty fields' });
     }
     const signUp = await userDb.createUser(
@@ -34,23 +33,22 @@ const registerUser = async (req, res) => {
 const checkLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const { body } = req;
-    if (body.username === undefined || body.password === undefined) {
+    if (username === undefined || password === undefined) {
       res.status(400).json({ success: false, message: 'enter username and password' });
     }
     const checkLoginQuery = await userDb.login(username, password);
     if (checkLoginQuery.length > 0) {
-      if (checkLoginQuery[0].username === body.username
-        && checkLoginQuery[0].password === body.password) {
+      if (checkLoginQuery[0].username === username
+        && checkLoginQuery[0].password === password) {
         const { id } = checkLoginQuery[0];
         const token = jwt.sign({ id }, 'userkey', { expiresIn: 3000 });
-        localStorage.setItem('token', token);
         res.status(200).json({ success: 'true', token, message: 'login successfull' });
       }
     } else {
       res.status(400).json({ success: false, message: 'enter valid input and output' });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: 'false', message: 'internal server error' });
   }
 };

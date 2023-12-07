@@ -9,7 +9,6 @@ const cors = require('cors');
 
 app.use(cors());
 
-const userRoute = require('./routes/user');
 const admin = require('./admin/route/admin');
 const adminAuthentication = require('./admin/route/authentication');
 
@@ -22,12 +21,7 @@ const userAuthentication = require('./user/route/authentication');
 app.use('/user', user);
 app.use('/userAuth', userAuthentication);
 
-app.use('/user', userRoute);
 app.use('/uploads', express.static('uploads'));
-
-const busRoute = require('./routes/bus');
-
-app.use('/bus', busRoute);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
