@@ -31,39 +31,25 @@ async function viewBus(startingPoint, destination, boardingTime) {
 
   try {
     let result;
-    if (startingPoint != null && destination != null && boardingTime != null) {
-      const getBusByTime = `select bus.id, bus.name, route.starting_point, route.destination, 
-      route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
-      booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
-      booking_amenities.emergency_contacts FROM bus INNER JOIN route
-      ON bus.id = route.bus_id inner join booking_amenities on booking_amenities.bus_id = bus.id
-      WHERE route.starting_point =? AND route.destination = ? and route.boarding_time = ?`;
-      result = await db.query(getBusByTime, [startingPoint, destination, boardingTime]);
-    } else if (startingPoint != null && destination != null && boardingTime === undefined) {
-      const getBusByRoute = `select bus.id, bus.name, route.starting_point, route.destination, 
-      route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
-      booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
-      booking_amenities.emergency_contacts FROM bus INNER JOIN route
-      ON bus.id = route.bus_id inner join booking_amenities on 
-      booking_amenities.bus_id = bus.id WHERE route.starting_point = ? AND route.destination = ? limit 10`;
-      result = await db.query(getBusByRoute, [startingPoint, destination]);
-    } else if (startingPoint != null && destination === undefined && boardingTime === undefined) {
-      const startPointOnly = `select bus.id, bus.name, route.starting_point, route.destination, 
-      route.boarding_time, route.deboarding_time, booking_amenities.m_ticket, booking_amenities.cctv,
-      booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
-      booking_amenities.emergency_contacts FROM bus INNER JOIN route
-      ON bus.id = route.bus_id inner join booking_amenities on booking_amenities.bus_id = bus.id
-      WHERE route.starting_point = ? limit 10`;
-      result = await db.query(startPointOnly, [startingPoint]);
-    } else {
-      const getAllBus = `select bus.id, bus.name, bus.bus_number, bus.type, bus.fare_per_km, bus.ratings,
+    const getAllBus = `select bus.id, bus.name, bus.bus_number, bus.type, bus.fare_per_km, bus.ratings,
             bus.status,route.starting_point, route.destination, route.boarding_time, route.deboarding_time,
             booking_amenities.m_ticket, booking_amenities.cctv,
             booking_amenities.reading_light, booking_amenities.blanket,booking_amenities.charging_point,
             booking_amenities.emergency_contacts
             from bus inner join route on bus.id = route.bus_id inner join booking_amenities on
-            booking_amenities.bus_id = bus.id limit 10`;
-      result = await db.query(getAllBus);
+            booking_amenities.bus_id = bus.id`;
+
+    if (startingPoint != null && destination != null && boardingTime != null) {
+      const getBusByTime = `${getAllBus} WHERE route.starting_point =? AND route.destination = ? and route.boarding_time = ?`;
+      result = await db.query(getBusByTime, [startingPoint, destination, boardingTime]);
+    } else if (startingPoint != null && destination != null && boardingTime === undefined) {
+      const getBusByRoute = `${getAllBus} WHERE route.starting_point = ? AND route.destination = ? limit 10`;
+      result = await db.query(getBusByRoute, [startingPoint, destination]);
+    } else if (startingPoint != null && destination === undefined && boardingTime === undefined) {
+      const startPointOnly = `${getAllBus} WHERE route.starting_point = ? limit 10`;
+      result = await db.query(startPointOnly, [startingPoint]);
+    } else {
+      result = await db.query(`${getAllBus} limit 10`);
     }
     return result;
   } catch (err) {
@@ -79,20 +65,16 @@ async function viewBooking(date) {
 
   try {
     let result;
-    if (date != null) {
-      const filterByDate = `select customer.name, bus.id, bus.name as busName, booking.date,
+    const booking = `select customer.name, bus.name as busname, booking.date,
               booking.no_of_seats as noOfSeats, booking.total_amount as totalAmount, booking.status,
               route.starting_point as startingPoint, route.destination, route.boarding_time as boardingTime, route.deboarding_time as deboardingTime from booking
               inner join customer on customer.id = booking.customer_id inner join bus on bus.id = booking.bus_id
-              inner join route on bus.id = route.bus_id where booking.date = ?`;
+              inner join route on bus.id = route.bus_id`;
+    if (date != null) {
+      const filterByDate = `${booking} where booking.date = ?`;
       result = await db.query(filterByDate, [date]);
     } else {
-      const bookingView = `select customer.name, bus.name as busname, booking.date,
-            booking.no_of_seats as noOfSeats, booking.total_amount as totalAmount, booking.status,
-            route.starting_point as startingPoint, route.destination, route.boarding_time as boardingTime, route.deboarding_time as deboardingTime from booking
-            inner join customer on customer.id = booking.customer_id inner join bus on bus.id = booking.bus_id
-            inner join route on bus.id = route.bus_id where booking.date = current_date() `;
-      result = await db.query(bookingView);
+      result = await db.query(`${booking} where booking.date = current_date() `);
     }
     return result;
   } catch (err) {
@@ -108,7 +90,7 @@ async function viewOffers() {
 
   try {
     const viewQuery = `select * from offers where
-               current_date() <= validity_ends and current_date()>= validaity_start `;
+               current_date() <= validity_ends and current_date()>= validaity_start`;
     const viewOffer = await db.query(viewQuery);
     return viewOffer;
   } catch (err) {
@@ -123,26 +105,19 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, limi
   const db = adminDb.makeDb();
   try {
     let result;
-    if (!startDate || !endDate) {
-      const ticketQuery = `select bus.name as busName, route.starting_point, route.destination,
+    const query = `select bus.name as busName, route.starting_point, route.destination,
                 booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
                 ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
                 from ticket inner join booking on ticket.booking_id = booking.id
                 inner join bus on booking.bus_id = bus.id inner join route on 
-                route.bus_id = bus.id inner join customer on customer.id = booking.customer_id
-                where customer.id = ? and bus.id = ? and booking.id = ? limit ?`;
+                route.bus_id = bus.id inner join customer on customer.id = booking.customer_id`;
+    if (!startDate || !endDate) {
+      const ticketQuery = `${query} where customer.id = ? and bus.id = ? and booking.id = ? limit ?`;
       result = await db.query(ticketQuery, [customerId, busId, bookingId, limit]);
     }
     if (startDate !== undefined && endDate !== undefined) {
-      const dateView = `select bus.name as busName, route.starting_point, route.destination,
-              booking.date, ticket.id as ticketNumber, ticket.seats_id, ticket.passenger_name,
-              ticket.passenger_email, ticket.passenger_phone, ticket.passenger_age
-              from ticket inner join booking on ticket.booking_id = booking.id
-              inner join bus on booking.bus_id = bus.id inner join route on route.bus_id = bus.id
-              inner join customer on customer.id = booking.customer_id
-              where customer.id = ? and bus.id = ? and
+      const dateView = `${query} where customer.id = ? and bus.id = ? and
               booking.date between ? and ? limit ?`;
-
       result = await db.query(
         dateView,
         [customerId, busId, startDate, endDate, limit],
@@ -163,7 +138,7 @@ async function addOffer(busId, offerName, offerDescription, rate, StartDate, end
   try {
     if (busId !== null) {
       const singleBus = `insert into offers
-                   (bus_id,offer_name, offer_description, rate, validaity_start, validity_ends, conditions) values(?, ?, ?, ?, ?, ? ,?) `;
+            (bus_id,offer_name, offer_description, rate, validaity_start, validity_ends, conditions) values(?, ?, ?, ?, ?, ? ,?) `;
 
       result = await db.query(
         singleBus,
@@ -191,17 +166,14 @@ async function viewReview(busId) {
   const db = adminDb.makeDb();
   try {
     let result;
+    const allReview = `select bus.name, customer.name as customer, bus_review.reiew as review,
+    bus_review.suggestions, DATE_FORMAT(bus_review.created, '%Y-%m-%d') as date
+    from bus_review inner join bus on bus_review.bus_id = bus.id
+    inner join customer on bus_review.cust_id = customer.id`;
     if (busId !== undefined) {
-      const getReview = `select bus.name, customer.name as customer, bus_review.reiew as review,
-                    bus_review.suggestions, DATE_FORMAT(bus_review.created, '%Y-%m-%d') as date
-                    from bus_review inner join bus on bus_review.bus_id = bus.id
-                    inner join customer on bus_review.cust_id = customer.id where bus_id = ?`;
+      const getReview = `${allReview} where bus_id = ?`;
       result = await db.query(getReview, busId);
     } else {
-      const allReview = `select bus.name, customer.name as customer, bus_review.reiew as review,
-                    bus_review.suggestions, DATE_FORMAT(bus_review.created, '%Y-%m-%d') as date
-                    from bus_review inner join bus on bus_review.bus_id = bus.id
-                    inner join customer on bus_review.cust_id = customer.id`;
       result = await db.query(allReview);
     }
     return result;
