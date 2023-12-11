@@ -1,64 +1,17 @@
-const busDb = require('../model/user');
+const busDb = require('../model/bus');
 
 const getBus = async (req, res) => {
   try {
-    const { startingPoint, destination, boardingTime } = req.body;
-    const buses = await busDb.viewBus(startingPoint, destination, boardingTime);
-    if (buses.length > 0) {
-      res.status(200).json({ success: true, result: buses });
-    } else {
-      res.status(400).json({ success: 'false', message: 'error occurred' });
-    }
-  } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
-  }
-};
-
-const booking = async (req, res) => {
-  try {
     const {
-      customerId,
-      busId,
-      date,
-      noOfSeats,
-      totalAmount,
-      status,
-      seatsId,
+      startingPoint, destination, boardingTime, page = 1,
     } = req.body;
-
-    if (customerId === undefined || busId === undefined
-      || date === undefined || noOfSeats === undefined || totalAmount === undefined) {
-      res.status(400).json({ success: 'false', message: 'enter all values' });
-    }
-    const addBooking = await busDb.booking(
-      customerId,
-      busId,
-      date,
-      noOfSeats,
-      totalAmount,
-      status,
-      seatsId,
-    );
-
-    if (addBooking.length > 0 && addBooking.seatsId !== null) {
-      res.status(404).json({ success: 'false', message: 'booking already exists' });
+    const buses = await busDb.viewBus(startingPoint, destination, boardingTime, page);
+    if (buses.length > 0) {
+      res.status(200).json({
+        success: 'true', result: buses[0], totalPage: buses[1], page: `${page}/${buses[1]}`,
+      });
     } else {
-      res.status(200).json({ success: 'true', message: addBooking.message });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: 'false', message: 'internal server error' });
-  }
-};
-
-const viewBooking = async (req, res) => {
-  try {
-    const { date } = req.body;
-    const viewBookings = await busDb.viewBooking(date);
-    if (viewBookings.length > 0) {
-      res.status(200).json({ success: 'true', result: viewBookings });
-    } else {
-      res.status(200).json({ success: 'false', message: 'no bookings' });
+      res.status(400).json({ success: 'false', message: 'no bus available' });
     }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
@@ -75,23 +28,6 @@ const viewOffers = async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ success: 'false', message: 'internal server error' });
-  }
-};
-
-const viewTickets = async (req, res) => {
-  try {
-    const {
-      customerId, busId, bookingId, startDate, endDate, limit,
-    } = req.body;
-    const tickets = await busDb.viewTicket(customerId, busId, bookingId, startDate, endDate, limit);
-    if (tickets.length > 0) {
-      res.status(200).json({ success: 'true', message: tickets });
-    } else {
-      res.status(200).json({ success: 'true', message: 'no booking' });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: 'false', message: err });
   }
 };
 
@@ -116,7 +52,7 @@ const viewSeats = async (req, res) => {
       date,
     } = req.body;
     if (!date) {
-      res.status(400).json({ message: 'enter the date ' });
+      res.status(400).json({ success: false, message: 'enter the date ' });
     } else {
       const addBooking = await busDb.viewSeats(
         date,
@@ -156,10 +92,7 @@ const addReview = async (req, res) => {
 
 module.exports = {
   getBus,
-  booking,
-  viewBooking,
   viewOffers,
-  viewTickets,
   bookingCancel,
   viewSeats,
   addReview,
