@@ -9,5 +9,6 @@ router.post('/addBooking', verifyToken, booking.booking);
 router.get('/viewBooking', verifyToken, booking.viewBooking);
 router.get('/viewTicket', verifyToken, booking.viewTickets);
 router.get('/adBooking', verifyToken, booking.booking);
+router.put('/cancelBooking', verifyToken, booking.bookingCancel);
 
 module.exports = router;

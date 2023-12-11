@@ -8,7 +8,6 @@ const { verifyToken } = require('../../middleWare/middleWare');
 
 router.get('/viewBuses', verifyToken, bus.getBus);
 router.get('/viewOffers', verifyToken, bus.viewOffers);
-router.put('/cancelBooking', verifyToken, bus.bookingCancel);
 router.all('/viewSeats', verifyToken, bus.viewSeats);
 router.post('/addReview', verifyToken, bus.addReview);
 

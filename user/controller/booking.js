@@ -79,9 +79,24 @@ const viewTickets = async (req, res) => {
     res.status(500).json({ success: 'false', message: err });
   }
 };
+const bookingCancel = async (req, res) => {
+  try {
+    const { bookingId, seatsToCancel } = req.body;
+    const cancelBooking = await bookBus.cancelBookings(bookingId, seatsToCancel);
+    if (cancelBooking) {
+      res.status(200).json({ success: true, message: 'booking canceled' });
+    } else {
+      res.status(400).json({ success: true, message: 'no bookings' });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(200).json({ success: false, message: err });
+  }
+};
 
 module.exports = {
   booking,
   viewBooking,
   viewTickets,
+  bookingCancel,
 };
