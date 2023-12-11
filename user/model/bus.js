@@ -3,7 +3,7 @@ const busdb = require('../../db_connection');
 async function viewBus(startingPoint, destination, boardingTime, page) {
   const db = busdb.makeDb();
   try {
-    const result = [];
+    const result = {};
     const getAllBus = `select bus.id, bus.name, bus.bus_number, bus.type, bus.fare_per_km, bus.ratings,
             bus.status,route.starting_point, route.destination, route.boarding_time, route.deboarding_time,
             booking_amenities.m_ticket, booking_amenities.cctv,
@@ -21,34 +21,34 @@ async function viewBus(startingPoint, destination, boardingTime, page) {
         getBusByTime,
         [startingPoint, destination, boardingTime, page],
       );
-      result.push(getBuses);
+      result.data = getBuses;
       const totalPageData = await db.query(`${getCount} WHERE route.starting_point = ?
                         AND route.destination = ? and route.boarding_time = ?`, [startingPoint, destination, boardingTime]);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
 
-      result.push(totalPage);
+      result.totalPage = totalPage;
     } else if (startingPoint != null && destination != null && boardingTime === undefined) {
       const count = `${getCount}  WHERE route.starting_point = ? AND route.destination = ?`;
       const getBusByRoute = `${getAllBus} WHERE route.starting_point = ? AND route.destination = ? limit ${offset}, 10`;
       const getBuses = await db.query(getBusByRoute, [startingPoint, destination, page]);
-      result.push(getBuses);
+      result.data = getBuses;
       const totalPageData = await db.query(count, [startingPoint, destination]);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
-      result.push(totalPage);
+      result.totalPage = totalPage;
     } else if (startingPoint != null && destination === undefined && boardingTime === undefined) {
       const count = `${getCount} WHERE route.starting_point = ?`;
       const startPointOnly = `${getAllBus} WHERE route.starting_point = ? limit ${offset}, 10`;
       const getBuses = await db.query(startPointOnly, [startingPoint, page]);
-      result.push(getBuses);
+      result.data = getBuses;
       const totalPageData = await db.query(count, [startingPoint]);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
-      result.push(totalPage);
+      result.totalPage = totalPage;
     } else {
       const getBuses = await db.query(`${getAllBus} limit ${offset}, 10`, [page]);
-      result.push(getBuses);
+      result.data = getBuses;
       const totalPageData = await db.query(`${getCount}`);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
-      result.push(totalPage);
+      result.totalPage = totalPage;
     }
     return result;
   } catch (err) {

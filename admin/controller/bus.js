@@ -7,17 +7,17 @@ async function addBus(req, res) {
     } = req.body;
     if (name === undefined || busNumber === undefined || type === undefined
       || farePerKm === undefined || ratings === undefined || status === undefined) {
-      res.status(400).json({ success: 'false', message: 'enter all values' });
+      res.status(400).json({ success: false, message: 'enter all values' });
     } else {
       const addBusQuery = await busdb.addBus(name, busNumber, type, farePerKm, ratings, status);
       if (addBusQuery.length > 0) {
-        res.status(200).json({ success: 'false', message: 'bus already exists' });
+        res.status(200).json({ success: false, message: 'bus already exists' });
       } else {
-        res.status(200).json({ success: 'true', message: 'bus added' });
+        res.status(200).json({ success: true, message: 'bus added' });
       }
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 }
 
@@ -27,15 +27,15 @@ const getBus = async (req, res) => {
       startingPoint, destination, boardingTime, page = 1,
     } = req.body;
     const buses = await busdb.viewBus(startingPoint, destination, boardingTime, page);
-    if (buses.length > 0) {
+    if (buses) {
       res.status(200).json({
-        success: 'true', result: buses[0], totalPage: buses[1], page: `${page}/${buses[1]}`,
+        success: true, data: buses, page: `${page}}`,
       });
     } else {
-      res.status(400).json({ success: 'false', message: 'no bus available' });
+      res.status(400).json({ success: false, message: 'no bus available' });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
@@ -43,12 +43,12 @@ const viewOffers = async (req, res) => {
   try {
     const currentOffers = await busdb.viewOffers();
     if (currentOffers.length > 0) {
-      res.status(200).json({ success: 'true', message: currentOffers });
+      res.status(200).json({ success: true, data: currentOffers });
     } else {
       res.status(200).json({ success: true, message: 'no offer exists' });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
@@ -82,7 +82,7 @@ const addOffer = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 
@@ -93,7 +93,7 @@ const viewReview = async (req, res) => {
     } = req.body;
     const review = await busdb.viewReview(busId);
     if (review.length > 0) {
-      res.status(200).json({ success: true, message: review });
+      res.status(200).json({ success: true, data: review });
     } else {
       res.status(400).json({ success: false, message: 'no reviews' });
     }

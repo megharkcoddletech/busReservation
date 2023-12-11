@@ -5,12 +5,12 @@ const viewBooking = async (req, res) => {
     const { date } = req.body;
     const viewBookings = await bookingdb.viewBooking(date);
     if (viewBookings.length > 0) {
-      res.status(200).json({ success: 'true', result: viewBookings });
+      res.status(200).json({ success: true, data: viewBookings });
     } else {
-      res.status(200).json({ success: 'true', message: 'no bookings' });
+      res.status(200).json({ success: true, message: 'no bookings' });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
@@ -30,17 +30,17 @@ const viewTickets = async (req, res) => {
         endDate,
         page,
       );
-      if (tickets.length > 0) {
+      if (tickets) {
         res.status(200).json({
-          success: 'true', message: tickets[0], totalPage: tickets[1], page: `${page}/${tickets[1]}`,
+          success: true, data: tickets, page: `${page}}`,
         });
       } else {
-        res.status(200).json({ success: 'true', message: tickets });
+        res.status(200).json({ success: true, message: 'no tickets' });
       }
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 module.exports = {

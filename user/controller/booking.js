@@ -14,7 +14,7 @@ const booking = async (req, res) => {
 
     if (customerId === undefined || busId === undefined
     || date === undefined || noOfSeats === undefined || totalAmount === undefined) {
-      res.status(400).json({ success: 'false', message: 'enter all values' });
+      res.status(400).json({ success: false, message: 'enter all values' });
     }
     const addBooking = await bookBus.booking(
       customerId,
@@ -26,14 +26,14 @@ const booking = async (req, res) => {
       seatsId,
     );
 
-    if (addBooking.length > 0 && addBooking.seatsId !== null) {
-      res.status(404).json({ success: 'false', message: 'booking already exists' });
+    if (addBooking.length > 0) {
+      res.status(404).json({ success: false, message: 'booking already exists' });
     } else {
-      res.status(200).json({ success: 'true', message: addBooking.message });
+      res.status(200).json({ success: true, message: addBooking.message });
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
@@ -42,12 +42,12 @@ const viewBooking = async (req, res) => {
     const { date } = req.body;
     const viewBookings = await bookBus.viewBooking(date);
     if (viewBookings.length > 0) {
-      res.status(200).json({ success: 'true', result: viewBookings });
+      res.status(200).json({ success: true, data: viewBookings });
     } else {
-      res.status(200).json({ success: 'false', message: 'no bookings' });
+      res.status(200).json({ success: false, message: 'no bookings' });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 const viewTickets = async (req, res) => {
@@ -66,17 +66,17 @@ const viewTickets = async (req, res) => {
         endDate,
         page,
       );
-      if (tickets.length > 0) {
+      if (tickets) {
         res.status(200).json({
-          success: 'true', message: tickets[0], totalPage: tickets[1], page: `${page}/${tickets[1]}`,
+          success: true, data: tickets, page: `${page}`,
         });
       } else {
-        res.status(200).json({ success: 'true', message: tickets });
+        res.status(200).json({ success: true, message: 'no tickets' });
       }
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: err });
+    res.status(500).json({ success: false, message: err });
   }
 };
 const bookingCancel = async (req, res) => {

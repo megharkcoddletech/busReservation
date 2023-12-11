@@ -9,7 +9,7 @@ const registerUser = async (req, res) => {
     if (name === undefined || password === undefined || username === undefined
       || email === undefined || age === undefined || contactNumber === undefined
       || gender === undefined) {
-      res.status(400).json({ success: 'false', message: 'Fill the empty fields' });
+      res.status(400).json({ success: false, message: 'Fill the empty fields' });
     }
     const signUp = await userDb.createUser(
       name,
@@ -21,12 +21,12 @@ const registerUser = async (req, res) => {
       gender,
     );
     if (signUp.length > 0) {
-      res.status(404).json({ success: 'false', message: 'user already exists' });
+      res.status(404).json({ success: false, message: 'user already exists' });
     } else {
-      res.status(200).json({ success: 'true', message: 'user registered successfully' });
+      res.status(200).json({ success: true, message: 'user registered successfully' });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server' });
+    res.status(500).json({ success: false, message: 'internal server' });
   }
 };
 
@@ -42,21 +42,21 @@ const checkLogin = async (req, res) => {
         && checkLoginQuery[0].password === password) {
         const { id } = checkLoginQuery[0];
         const token = jwt.sign({ id }, 'userkey', { expiresIn: 3000 });
-        res.status(200).json({ success: 'true', token, message: 'login successfull' });
+        res.status(200).json({ success: true, data: token, message: 'login successfull' });
       }
     } else {
       res.status(400).json({ success: false, message: 'enter valid input and output' });
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
 const upadteImage = async (req, res) => {
   try {
     if (!req.file) {
-      res.status(400).json({ success: 'false', message: 'image should be in jpeg/jpg format and file size should not exceeds 2mb' });
+      res.status(400).json({ success: false, message: 'image should be in jpeg/jpg format and file size should not exceeds 2mb' });
     }
     const {
       name, contactNumber, id,
@@ -67,10 +67,10 @@ const upadteImage = async (req, res) => {
 
     const addImage = await userDb.userImage(name, contactNumber, image, id);
     if (addImage) {
-      res.status(200).json({ success: 'true', url });
+      res.status(200).json({ success: true, data: url });
     }
   } catch (err) {
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 
