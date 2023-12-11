@@ -9,16 +9,20 @@ const cors = require('cors');
 
 app.use(cors());
 
-const admin = require('./admin/route/admin');
+const adminBus = require('./admin/route/bus');
 const adminAuthentication = require('./admin/route/authentication');
+const adminBooking = require('./admin/route/booking');
 
 app.use('/adminAuth', adminAuthentication);
-app.use('/admin', admin);
+app.use('/adminBus', adminBus);
+app.use('/adminBooking', adminBooking);
 
-const user = require('./user/route/user');
+const userBus = require('./user/route/bus');
+const userBooking = require('./user/route/booking');
 const userAuthentication = require('./user/route/authentication');
 
-app.use('/user', user);
+app.use('/userBus', userBus);
+app.use('/userBooking', userBooking);
 app.use('/userAuth', userAuthentication);
 
 app.use('/uploads', express.static('uploads'));
