@@ -31,21 +31,6 @@ const viewOffers = async (req, res) => {
   }
 };
 
-const bookingCancel = async (req, res) => {
-  try {
-    const { bookingId, seatsToCancel } = req.body;
-    const cancelBooking = await busDb.cancelBookings(bookingId, seatsToCancel);
-    if (cancelBooking) {
-      res.status(200).json({ success: true, message: 'booking canceled' });
-    } else {
-      res.status(400).json({ success: true, message: 'no bookings' });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(200).json({ success: false, message: err });
-  }
-};
-
 const viewSeats = async (req, res) => {
   try {
     const {
@@ -93,7 +78,6 @@ const addReview = async (req, res) => {
 module.exports = {
   getBus,
   viewOffers,
-  bookingCancel,
   viewSeats,
   addReview,
 };
