@@ -45,7 +45,7 @@ const viewOffers = async (req, res) => {
     if (currentOffers.length > 0) {
       res.status(200).json({ success: true, data: currentOffers });
     } else {
-      res.status(200).json({ success: true, message: 'no offer exists' });
+      res.status(200).json({ success: false, message: 'no offer exists' });
     }
   } catch (err) {
     res.status(500).json({ success: false, message: 'internal server error' });
@@ -77,7 +77,7 @@ const addOffer = async (req, res) => {
           res.status(200).json({ success: true, message: `offer added for ${busId}` });
         }
       } else {
-        res.status(200).json({ success: true, message: 'offer exists ' });
+        res.status(200).json({ success: false, message: 'offer exists ' });
       }
     }
   } catch (err) {

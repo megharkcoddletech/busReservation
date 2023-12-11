@@ -86,7 +86,7 @@ const bookingCancel = async (req, res) => {
     if (cancelBooking) {
       res.status(200).json({ success: true, message: 'booking canceled' });
     } else {
-      res.status(400).json({ success: true, message: 'no bookings' });
+      res.status(400).json({ success: false, message: 'no bookings' });
     }
   } catch (err) {
     console.log(err);
