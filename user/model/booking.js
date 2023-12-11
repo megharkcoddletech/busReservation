@@ -101,7 +101,7 @@ async function viewBooking(date) {
 async function viewTicket(customerId, busId, bookingId, startDate, endDate, page) {
   const db = bookingDb.makeDb();
   try {
-    const result = [];
+    const result = {};
     const count = `select count(*) totalCount from ticket inner join booking on ticket.booking_id = booking.id
     inner join bus on booking.bus_id = bus.id inner join route on 
     route.bus_id = bus.id inner join customer on customer.id = booking.customer_id `;
@@ -118,10 +118,10 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, page
     if (!startDate || !endDate) {
       const ticketQuery = `${query} where customer.id = ? and bus.id = ? and booking.id = ? limit ${offset}, 10`;
       const tickets = await db.query(ticketQuery, [customerId, busId, bookingId, page]);
-      result.push(tickets);
+      result.data = tickets;
       const totalPageData = await db.query(`${count} where customer.id = ? and bus.id = ? and booking.id = ?`, [customerId, busId, bookingId]);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
-      result.push(totalPage);
+      result.totalPage = totalPage;
     }
     if (startDate !== undefined && endDate !== undefined) {
       const dateView = `select bus.name as busName, route.starting_point, route.destination, booking.date,
@@ -135,11 +135,11 @@ async function viewTicket(customerId, busId, bookingId, startDate, endDate, page
         dateView,
         [customerId, busId, startDate, endDate, page],
       );
-      result.push(tickets);
+      result.data = tickets;
       const totalPageData = await db.query(`${count} where customer.id = ? and bus.id = ? and
                  booking.date between ? and ?`, [customerId, busId, startDate, endDate]);
       const totalPage = Math.ceil(totalPageData[0].totalCount / 10);
-      result.push(totalPage);
+      result.totalPage = totalPage;
     }
     return result;
   } catch (err) {

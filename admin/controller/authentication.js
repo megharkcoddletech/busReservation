@@ -13,14 +13,14 @@ const checkLogin = async (req, res) => {
         && checkLoginQuery[0].password === password) {
         const { id } = checkLoginQuery[0];
         const token = jwt.sign({ id }, 'userkey', { expiresIn: 3000 });
-        res.status(200).json({ success: 'true', token, message: 'login successfull' });
+        res.status(200).json({ success: true, data: token, message: 'login successfull' });
       } else {
         res.status(400).json({ success: false, message: 'enter valid input and output' });
       }
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: 'false', message: 'internal server error' });
+    res.status(500).json({ success: false, message: 'internal server error' });
   }
 };
 module.exports = {

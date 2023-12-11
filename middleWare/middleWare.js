@@ -7,11 +7,7 @@ function verifyToken(req, res, next) {
   }
   const token = authHeader.split(' ')[1];
   jwt.verify(token, 'userkey', () => {
-    try {
-      next();
-    } catch (err) {
-      res.status(500).json({ success: false, message: 'internal server error' });
-    }
+    next();
   });
 }
 
